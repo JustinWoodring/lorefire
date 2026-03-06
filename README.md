@@ -36,7 +36,19 @@ Optional (for AI features):
 
 ---
 
-## Setup
+## Getting Started (Downloaded Release)
+
+If you downloaded a release `.dmg` from the [Releases](https://github.com/JustinWoodring/lorefire/releases) page, macOS Gatekeeper will block the app from opening because it is not notarized. Run this command after installing to remove the quarantine flag:
+
+```bash
+xattr -rd com.apple.quarantine /Applications/Lorefire.app
+```
+
+Then open the app normally.
+
+---
+
+## Setup (Development)
 
 ```bash
 # Clone the repo
