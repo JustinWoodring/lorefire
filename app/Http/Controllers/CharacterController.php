@@ -73,6 +73,8 @@ class CharacterController extends Controller
 
     public function edit(Campaign $campaign, Character $character): Response
     {
+        $character->load('spells');
+
         return Inertia::render('Characters/Edit', [
             'campaign'         => $campaign,
             'character'        => $character,

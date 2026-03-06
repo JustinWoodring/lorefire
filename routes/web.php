@@ -7,6 +7,7 @@ use App\Http\Controllers\CampaignPartyImageController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterImageController;
 use App\Http\Controllers\CharacterRestController;
+use App\Http\Controllers\CharacterSpellController;
 use App\Http\Controllers\CharacterSpellSlotsController;
 use App\Http\Controllers\DndBeyondImportController;
 use App\Http\Controllers\PdfExportController;
@@ -76,6 +77,16 @@ Route::patch('characters/{character}/inventory/{item}/equip', [InventoryItemCont
     ->name('characters.inventory.equip');
 Route::patch('characters/{character}/inventory/{item}/attune', [InventoryItemController::class, 'toggleAttuned'])
     ->name('characters.inventory.attune');
+
+// Spells (flat routes — work for both campaign and standalone characters)
+Route::post('characters/{character}/spells', [CharacterSpellController::class, 'store'])
+    ->name('characters.spells.store');
+Route::patch('characters/{character}/spells/{spell}', [CharacterSpellController::class, 'update'])
+    ->name('characters.spells.update');
+Route::patch('characters/{character}/spells/{spell}/prepare', [CharacterSpellController::class, 'togglePrepared'])
+    ->name('characters.spells.prepare');
+Route::delete('characters/{character}/spells/{spell}', [CharacterSpellController::class, 'destroy'])
+    ->name('characters.spells.destroy');
 
 // Inventory snapshots
 Route::post('characters/{character}/inventory/snapshots', [InventorySnapshotController::class, 'store'])

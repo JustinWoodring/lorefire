@@ -92,6 +92,7 @@ class StandaloneCharacterController extends Controller
 
     public function edit(Character $character): Response
     {
+        $character->load('spells');
         $campaigns = Campaign::orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Characters/Edit', [

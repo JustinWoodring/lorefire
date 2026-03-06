@@ -5,7 +5,8 @@ import { Button } from '@/Components/Button'
 import { Input, Textarea, Select } from '@/Components/Input'
 import { RuneDivider } from '@/Components/RuneDivider'
 import { ClassFeatures } from '@/Components/ClassFeatures'
-import { Campaign, Character } from '@/types'
+import { SpellsTab } from '@/Components/SpellsTab'
+import { Campaign, Character, CharacterSpell } from '@/types'
 
 interface Props {
   campaign: Campaign | null
@@ -447,6 +448,15 @@ export default function Edit({ campaign, character, campaigns, imageGenProvider 
             proficiencyBonus={data.proficiency_bonus}
             value={data.class_features as Record<string, unknown>}
             onChange={cf => setData('class_features', cf)}
+          />
+
+          {/* Spell list management */}
+          <RuneDivider label="Spell List" />
+
+          <SpellsTab
+            characterId={character.id}
+            characterClass={data.class}
+            spells={character.spells ?? []}
           />
 
           {/* Notes */}
