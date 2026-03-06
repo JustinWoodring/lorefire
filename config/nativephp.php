@@ -158,7 +158,7 @@ return [
     ],
 
     'postbuild' => [
-        // 'rm -rf public/build',
+        'composer install', // Restore dev dependencies pruned during build
     ],
 
     /**
