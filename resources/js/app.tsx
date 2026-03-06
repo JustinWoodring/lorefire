@@ -4,6 +4,7 @@ import '../css/app.css';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { RecordingProvider } from '@/Contexts/RecordingContext';
 
 createInertiaApp({
     title: (title) => title ? `${title} — Lorefire` : 'Lorefire',
@@ -13,7 +14,11 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.tsx'),
         ),
     setup({ el, App, props }) {
-        createRoot(el).render(<App {...props} />);
+        createRoot(el).render(
+            <RecordingProvider>
+                <App {...props} />
+            </RecordingProvider>
+        );
     },
     progress: {
         color: '#b45309',

@@ -19,6 +19,93 @@ const ALIGNMENTS = ['Lawful Good','Neutral Good','Chaotic Good','Lawful Neutral'
 const CLASSES = ['Artificer','Barbarian','Bard','Cleric','Druid','Fighter','Monk','Paladin','Ranger','Rogue','Sorcerer','Warlock','Wizard']
 const RACES = ['Dragonborn','Dwarf','Elf','Gnome','Half-Elf','Halfling','Half-Orc','Human','Tiefling','Other']
 
+// PHB spell slot table keyed by character level.
+// Full casters: Bard, Cleric, Druid, Sorcerer, Wizard
+// Half casters (round up): Paladin, Ranger  → divide caster level by 2
+// Artificer (round up): half caster like Paladin/Ranger
+// Warlock: pact slots — only one "level" pool (listed under slot level 1 here, overridden per level)
+// Non-casters/martial with no slots: Barbarian, Fighter, Monk, Rogue → {}
+const FULL_CASTER_SLOTS: Record<number, Record<number, number>> = {
+  1:  { 1: 2 },
+  2:  { 1: 3 },
+  3:  { 1: 4, 2: 2 },
+  4:  { 1: 4, 2: 3 },
+  5:  { 1: 4, 2: 3, 3: 2 },
+  6:  { 1: 4, 2: 3, 3: 3 },
+  7:  { 1: 4, 2: 3, 3: 3, 4: 1 },
+  8:  { 1: 4, 2: 3, 3: 3, 4: 2 },
+  9:  { 1: 4, 2: 3, 3: 3, 4: 3, 5: 1 },
+  10: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 },
+  11: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1 },
+  12: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1 },
+  13: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1 },
+  14: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1 },
+  15: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1 },
+  16: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1 },
+  17: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1, 9: 1 },
+  18: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 1, 7: 1, 8: 1, 9: 1 },
+  19: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 1, 8: 1, 9: 1 },
+  20: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1 },
+}
+
+// Half casters use caster level = ceil(class level / 2); slot table same shape as full but shifted
+const HALF_CASTER_SLOTS: Record<number, Record<number, number>> = {
+  1:  {},  // no slots at caster level 1 for half casters
+  2:  { 1: 2 },
+  3:  { 1: 3 },
+  4:  { 1: 3 },
+  5:  { 1: 4, 2: 2 },
+  6:  { 1: 4, 2: 2 },
+  7:  { 1: 4, 2: 3 },
+  8:  { 1: 4, 2: 3 },
+  9:  { 1: 4, 2: 3, 3: 2 },
+  10: { 1: 4, 2: 3, 3: 2 },
+}
+
+// Warlock pact slots: short-rest pool, all slots at a single level
+const WARLOCK_SLOTS: Record<number, Record<number, number>> = {
+  1:  { 1: 1 },
+  2:  { 1: 2 },
+  3:  { 2: 2 },
+  4:  { 2: 2 },
+  5:  { 3: 2 },
+  6:  { 3: 2 },
+  7:  { 4: 2 },
+  8:  { 4: 2 },
+  9:  { 5: 2 },
+  10: { 5: 2 },
+  11: { 5: 3 },
+  12: { 5: 3 },
+  13: { 5: 3 },
+  14: { 5: 3 },
+  15: { 5: 3 },
+  16: { 5: 3 },
+  17: { 5: 4 },
+  18: { 5: 4 },
+  19: { 5: 4 },
+  20: { 5: 4 },
+}
+
+const FULL_CASTERS = new Set(['Bard', 'Cleric', 'Druid', 'Sorcerer', 'Wizard'])
+const HALF_CASTERS = new Set(['Paladin', 'Ranger', 'Artificer'])
+
+function computeDefaultSlots(characterClass: string, level: number): Record<string, number> {
+  if (FULL_CASTERS.has(characterClass)) {
+    const row = FULL_CASTER_SLOTS[level] ?? {}
+    return Object.fromEntries(Object.entries(row).map(([k, v]) => [k, v]))
+  }
+  if (HALF_CASTERS.has(characterClass)) {
+    const casterLevel = Math.ceil(level / 2)
+    const row = HALF_CASTER_SLOTS[Math.min(casterLevel, 10)] ?? {}
+    return Object.fromEntries(Object.entries(row).map(([k, v]) => [k, v]))
+  }
+  if (characterClass === 'Warlock') {
+    const row = WARLOCK_SLOTS[level] ?? {}
+    return Object.fromEntries(Object.entries(row).map(([k, v]) => [k, v]))
+  }
+  return {}
+}
+
 const SKILLS_LIST = [
   'acrobatics','animal_handling','arcana','athletics','deception','history',
   'insight','intimidation','investigation','medicine','nature','perception',
@@ -65,6 +152,7 @@ export default function Edit({ campaign, character, campaigns, imageGenProvider 
     gold: character.gold,
     platinum: character.platinum,
     spellcasting_ability: character.spellcasting_ability ?? '',
+    spell_slots: (character.spell_slots ?? {}) as Record<string, number>,
     personality_traits: character.personality_traits ?? '',
     ideals: character.ideals ?? '',
     bonds: character.bonds ?? '',
@@ -83,6 +171,27 @@ export default function Edit({ campaign, character, campaigns, imageGenProvider 
     ...d,
     campaign_id: d.campaign_id === '' ? null : d.campaign_id,
   }))
+
+  // Track whether the user has manually customised spell slots so auto-compute doesn't clobber edits
+  const [slotsCustomised, setSlotsCustomised] = useState(false)
+
+  // Auto-populate spell_slots when class or level changes (unless user already customised them)
+  useEffect(() => {
+    if (slotsCustomised) return
+    const computed = computeDefaultSlots(data.class, data.level)
+    setData('spell_slots', computed)
+  }, [data.class, data.level])
+
+  const handleSlotChange = (slotLevel: number, value: number) => {
+    setSlotsCustomised(true)
+    setData('spell_slots', { ...data.spell_slots, [slotLevel]: value })
+  }
+
+  const resetSlotsToDefault = () => {
+    setSlotsCustomised(false)
+    const computed = computeDefaultSlots(data.class, data.level)
+    setData('spell_slots', computed)
+  }
 
   const portraitInputRef = useRef<HTMLInputElement>(null)
   const [portraitPreview, setPortraitPreview] = useState<string | null>(
@@ -438,6 +547,52 @@ export default function Edit({ campaign, character, campaigns, imageGenProvider 
             <option value="wisdom">Wisdom</option>
             <option value="charisma">Charisma</option>
           </Select>
+
+          {/* Spell Slot Maximums */}
+          {(() => {
+            const maxLevel = (() => {
+              if (FULL_CASTERS.has(data.class)) return Math.min(Math.ceil(data.level / 2) + 4, 9)
+              if (HALF_CASTERS.has(data.class)) return Math.min(Math.ceil(data.level / 4) + 1, 5)
+              if (data.class === 'Warlock') return Math.min(Math.ceil(data.level / 2) + 1, 5)
+              return 0
+            })()
+            if (maxLevel === 0) return null
+            const slotLevels = Array.from({ length: 9 }, (_, i) => i + 1)
+            return (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] uppercase tracking-widest text-[var(--color-text-dim)]">Spell Slot Maximums</p>
+                  <button
+                    type="button"
+                    onClick={resetSlotsToDefault}
+                    className="text-[10px] uppercase tracking-widest text-[var(--color-text-dim)] hover:text-[var(--color-rune)] transition-colors"
+                  >
+                    Reset to PHB default
+                  </button>
+                </div>
+                <div className="grid grid-cols-9 gap-2">
+                  {slotLevels.map(lvl => (
+                    <div key={lvl} className="flex flex-col items-center gap-1">
+                      <label className="text-[10px] uppercase tracking-widest text-[var(--color-text-dim)]">
+                        {lvl === 1 ? '1st' : lvl === 2 ? '2nd' : lvl === 3 ? '3rd' : `${lvl}th`}
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={9}
+                        value={(data.spell_slots as Record<string, number>)[lvl] ?? 0}
+                        onChange={e => handleSlotChange(lvl, parseInt(e.target.value) || 0)}
+                        className="w-full text-center bg-[var(--color-deep)] border border-[var(--color-border)] rounded py-1.5 text-[var(--color-text-white)] font-heading text-sm focus:outline-none focus:border-[var(--color-rune)]"
+                      />
+                    </div>
+                  ))}
+                </div>
+                {data.class === 'Warlock' && (
+                  <p className="text-[10px] text-[var(--color-text-dim)] mt-1">Warlock pact slots recover on a short rest. Enter the slot level and count above.</p>
+                )}
+              </div>
+            )
+          })()}
 
           {/* Class-specific features */}
           <ClassFeatures

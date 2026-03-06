@@ -23,6 +23,9 @@ use App\Http\Controllers\StandaloneCharacterController;
 use App\Http\Controllers\StorageFileController;
 use App\Http\Controllers\ChunkedAudioController;
 use App\Http\Controllers\TranscriptionController;
+use App\Http\Controllers\CharacterClassFeaturesController;
+use App\Http\Controllers\CharacterHpController;
+use App\Http\Controllers\LiveSessionController;
 use App\Models\AppSetting;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -65,6 +68,10 @@ Route::post('characters/{character}/rest/long', [CharacterRestController::class,
     ->name('characters.rest.long');
 Route::patch('characters/{character}/spell-slots', [CharacterSpellSlotsController::class, 'update'])
     ->name('characters.spell-slots.update');
+Route::patch('characters/{character}/hp', [CharacterHpController::class, 'update'])
+    ->name('characters.hp.update');
+Route::patch('characters/{character}/class-features', [CharacterClassFeaturesController::class, 'update'])
+    ->name('characters.class-features.update');
 
 // Inventory (standalone characters — no campaign prefix needed, character ID is unique)
 Route::post('characters/{character}/inventory', [InventoryItemController::class, 'store'])
@@ -117,13 +124,14 @@ Route::prefix('campaigns/{campaign}')->name('campaigns.')->group(function () {
     Route::resource('characters', CharacterController::class);
     Route::resource('npcs', NpcController::class);
     Route::resource('sessions', GameSessionController::class);
+    Route::get('sessions/{session}/live', [LiveSessionController::class, 'show'])->name('sessions.live');
     Route::post('characters/{character}/import-dnd-beyond', [DndBeyondImportController::class, 'import'])
         ->name('characters.import-dnd-beyond');
     Route::post('characters/{character}/rest/short', [CharacterRestController::class, 'shortRest'])
         ->name('characters.rest.short');
     Route::post('characters/{character}/rest/long', [CharacterRestController::class, 'longRest'])
         ->name('characters.rest.long');
-    Route::patch('characters/{character}/spell-slots', [CharacterSpellSlotsController::class, 'update'])
+    Route::patch('characters/{character}/spell-slots', [CharacterSpellSlotsController::class, 'updateForCampaign'])
         ->name('characters.spell-slots.update');
     // Speaker profiles (campaign-scoped)
     Route::post('speakers',                    [SpeakerProfileController::class, 'store'])->name('speakers.store');

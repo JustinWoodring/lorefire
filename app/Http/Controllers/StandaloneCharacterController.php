@@ -148,6 +148,7 @@ class StandaloneCharacterController extends Controller
             'skill_proficiencies'        => 'nullable|array',
             'skill_expertises'           => 'nullable|array',
             'class_features' => 'nullable|array',
+            'spell_slots'  => 'nullable|array',
             'portrait'     => 'nullable|file|image|max:10240',
             'portrait_style' => 'nullable|in:lifelike,renaissance,comic',
         ]);

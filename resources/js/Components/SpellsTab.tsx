@@ -89,6 +89,7 @@ const CLASS_SPELL_SUGGESTIONS: Record<string, Array<{ name: string; level: numbe
     { name: 'Fire Bolt',          level: 0, school: 'evocation',     casting_time: '1 action',  range: '120 ft', components: 'V, S',   duration: 'Instantaneous', concentration: false, ritual: false },
     { name: 'Prestidigitation',   level: 0, school: 'transmutation', casting_time: '1 action',  range: '10 ft', components: 'V, S',    duration: '1 hour',        concentration: false, ritual: false },
     { name: 'Mage Armor',         level: 1, school: 'abjuration',    casting_time: '1 action',  range: 'Touch', components: 'V, S, M', duration: '8 hours',       concentration: false, ritual: false },
+    { name: 'Magic Missile',      level: 1, school: 'evocation',     casting_time: '1 action',  range: '120 ft', components: 'V, S',   duration: 'Instantaneous', concentration: false, ritual: false },
     { name: 'Thunderwave',        level: 1, school: 'evocation',     casting_time: '1 action',  range: 'Self (15 ft)', components: 'V, S', duration: 'Instantaneous', concentration: false, ritual: false },
     { name: 'Scorching Ray',      level: 2, school: 'evocation',     casting_time: '1 action',  range: '120 ft', components: 'V, S',   duration: 'Instantaneous', concentration: false, ritual: false },
     { name: 'Fireball',           level: 3, school: 'evocation',     casting_time: '1 action',  range: '150 ft', components: 'V, S, M', duration: 'Instantaneous', concentration: false, ritual: false },

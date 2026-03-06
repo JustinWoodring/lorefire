@@ -101,6 +101,8 @@ export default function Show({ campaign, character, imageGenProvider }: Props) {
     ? `/characters/${character.id}/spell-slots`
     : `/campaigns/${campaign!.id}/characters/${character.id}/spell-slots`
 
+  const classFeaturesUrl = `/characters/${character.id}/class-features`
+
   const submitImport = (e: React.FormEvent) => {
     e.preventDefault()
     importForm.post(importUrl, {
@@ -434,7 +436,7 @@ export default function Show({ campaign, character, imageGenProvider }: Props) {
         {tab === 'stats' && character.class_features && Object.keys(character.class_features).length > 0 && (
           <Card>
             <CardHeader title={`${character.class} Features`} />
-            <ClassFeaturesDisplay cf={character.class_features} />
+            <ClassFeaturesDisplay cf={character.class_features} updateUrl={classFeaturesUrl} />
           </Card>
         )}
 
@@ -593,9 +595,38 @@ function SkillRow({ label, value, proficient, expert }: { label: string; value: 
 
 type CF = Record<string, unknown>
 
-function ClassFeaturesDisplay({ cf }: { cf: CF }) {
-  const entries = Object.entries(cf).filter(([, v]) => v !== null && v !== '' && v !== false && v !== 0)
-  if (entries.length === 0) return null
+function csrfToken(): string {
+  return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? ''
+}
+
+async function patchClassFeatures(url: string, updates: Record<string, unknown>) {
+  await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+    body: JSON.stringify({ updates }),
+  })
+}
+
+function ClassFeaturesDisplay({ cf, updateUrl }: { cf: CF; updateUrl: string }) {
+  const [local, setLocal] = useState<CF>({ ...cf })
+
+  // Lay on Hands — interactive pool tracker
+  const layMax = typeof local.lay_on_hands_max === 'number' ? local.lay_on_hands_max : null
+  const layCurrent = typeof local.lay_on_hands_current === 'number' ? local.lay_on_hands_current : null
+  const hasLayOnHands = layMax !== null && layCurrent !== null
+
+  const adjustLay = async (delta: number) => {
+    if (!hasLayOnHands) return
+    const next = Math.max(0, Math.min(layMax!, layCurrent! + delta))
+    setLocal(prev => ({ ...prev, lay_on_hands_current: next }))
+    await patchClassFeatures(updateUrl, { lay_on_hands_current: next })
+  }
+
+  // Generic display for all other keys
+  const skipKeys = new Set(['lay_on_hands_max', 'lay_on_hands_current'])
+  const genericEntries = Object.entries(local).filter(
+    ([k, v]) => !skipKeys.has(k) && v !== null && v !== '' && v !== false && v !== 0
+  )
 
   const formatKey = (k: string) =>
     k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
@@ -606,14 +637,70 @@ function ClassFeaturesDisplay({ cf }: { cf: CF }) {
     return String(v)
   }
 
+  if (!hasLayOnHands && genericEntries.length === 0) return null
+
   return (
-    <div className="flex flex-wrap gap-x-6 gap-y-2">
-      {entries.map(([key, val]) => (
-        <div key={key} className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-widest text-[var(--color-text-dim)]">{formatKey(key)}:</span>
-          <span className="text-xs font-mono text-[var(--color-rune-bright)]">{formatVal(val)}</span>
+    <div className="flex flex-col gap-4">
+      {/* Lay on Hands interactive tracker */}
+      {hasLayOnHands && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--color-text-dim)' }}>
+              Lay on Hands
+            </span>
+            <span className="text-xs font-mono" style={{ color: 'var(--color-rune-bright)' }}>
+              {layCurrent} / {layMax} HP
+            </span>
+          </div>
+          {/* Pool bar */}
+          <div className="hp-bar-track w-full">
+            <div
+              className="hp-bar-fill"
+              style={{
+                width: `${layMax! > 0 ? Math.max(0, Math.min(100, (layCurrent! / layMax!) * 100)) : 0}%`,
+                backgroundColor: 'var(--color-rune)',
+                boxShadow: '0 0 6px var(--color-rune)',
+              }}
+            />
+          </div>
+          <div className="flex gap-2">
+            {[1, 5, 10].map(amt => (
+              <button
+                key={`use-${amt}`}
+                onClick={() => adjustLay(-amt)}
+                disabled={layCurrent === 0}
+                className="flex-1 text-[10px] px-2 py-1 rounded transition-colors disabled:opacity-30"
+                style={{ background: 'rgba(220,38,38,0.15)', color: '#f87171', border: '1px solid rgba(220,38,38,0.3)' }}
+              >
+                −{amt}
+              </button>
+            ))}
+            {[1, 5, 10].map(amt => (
+              <button
+                key={`heal-${amt}`}
+                onClick={() => adjustLay(amt)}
+                disabled={layCurrent === layMax}
+                className="flex-1 text-[10px] px-2 py-1 rounded transition-colors disabled:opacity-30"
+                style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.25)' }}
+              >
+                +{amt}
+              </button>
+            ))}
+          </div>
         </div>
-      ))}
+      )}
+
+      {/* Generic key-value pairs for everything else */}
+      {genericEntries.length > 0 && (
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {genericEntries.map(([key, val]) => (
+            <div key={key} className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest text-[var(--color-text-dim)]">{formatKey(key)}:</span>
+              <span className="text-xs font-mono text-[var(--color-rune-bright)]">{formatVal(val)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

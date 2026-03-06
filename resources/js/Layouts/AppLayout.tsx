@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import { Toast } from '@/Components/Toast'
+import { useRecording } from '@/Contexts/RecordingContext'
 
 // Lorefire flame logo mark
 const LogoMark = () => (
@@ -76,6 +77,9 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, title, breadcrumbs }: AppLayoutProps) {
   const { url } = usePage()
+  const { isRecording, recordingSeconds, isUploading, uploadProgress, activeLiveUrl } = useRecording()
+
+  const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-void)' }}>
@@ -117,7 +121,22 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
           </nav>
 
           {/* Spacer + bottom indicator */}
-          <div className="mt-auto mb-2">
+          <div className="mt-auto mb-2 flex flex-col items-center gap-2">
+
+            {/* Recording pip — visible from any screen while mic is live. Clicking jumps to live session. */}
+            {(isRecording || isUploading) && (
+              <Link
+                href={activeLiveUrl ?? '#'}
+                className="no-drag flex flex-col items-center gap-1 transition-opacity hover:opacity-80"
+                title={isUploading ? (uploadProgress ?? 'Saving…') : `Recording · ${fmtTime(recordingSeconds)} — go to live session`}
+              >
+                <div className={`w-2 h-2 rounded-full ${isRecording ? 'animate-pulse bg-red-500' : 'bg-amber-400'}`} />
+                <span className="text-[8px] font-mono leading-none" style={{ color: 'var(--color-text-dim)' }}>
+                  {isRecording ? fmtTime(recordingSeconds) : '…'}
+                </span>
+              </Link>
+            )}
+
             <div
               className="w-1 h-8 rounded-full mx-auto"
               style={{ background: 'linear-gradient(to bottom, var(--color-rune-dim), transparent)', opacity: 0.4 }}
@@ -160,10 +179,29 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
               )}
 
               {/* Drag affordance hint */}
-              <div className="ml-auto flex gap-1 opacity-20">
-                {[0,1,2].map(i => (
-                  <div key={i} className="w-1 h-1 rounded-full bg-[var(--color-text-dim)]" />
-                ))}
+              <div className="ml-auto flex items-center gap-3">
+                {/* Recording badge — clickable, jumps to live session overview */}
+                {isRecording && (
+                  <Link
+                    href={activeLiveUrl ?? '#'}
+                    className="no-drag flex items-center gap-2 text-xs px-2 py-0.5 rounded transition-opacity hover:opacity-80"
+                    style={{ background: 'rgba(220,38,38,0.15)', color: '#f87171' }}
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                    Recording · {fmtTime(recordingSeconds)}
+                  </Link>
+                )}
+                {isUploading && (
+                  <div className="no-drag flex items-center gap-2 text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(180,83,9,0.15)', color: '#fbbf24' }}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    {uploadProgress ?? 'Saving…'}
+                  </div>
+                )}
+                <div className="flex gap-1 opacity-20">
+                  {[0,1,2].map(i => (
+                    <div key={i} className="w-1 h-1 rounded-full bg-[var(--color-text-dim)]" />
+                  ))}
+                </div>
               </div>
             </header>
           )}

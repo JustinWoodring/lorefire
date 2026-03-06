@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
+import { useRecording } from '@/Contexts/RecordingContext'
 import { usePdfExport } from '@/hooks/usePdfExport'
 import ReactMarkdown from 'react-markdown'
 import AppLayout from '@/Layouts/AppLayout'
@@ -212,8 +213,17 @@ interface Props {
 }
 
 export default function Show({ campaign, session, characters, transcriptSegments, speakerProfiles, imageGenProvider }: Props) {
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingSeconds, setRecordingSeconds] = useState(0)
+  const {
+    isRecording,
+    recordingSeconds,
+    isUploading,
+    uploadProgress,
+    activeSessionId,
+    startRecording,
+    stopRecording,
+    registerOnFinalized,
+  } = useRecording()
+
   const [transcriptOpen, setTranscriptOpen] = useState(false)
 
   const pdf = usePdfExport(`/campaigns/${campaign.id}/sessions/${session.id}/export-pdf`)
@@ -384,8 +394,39 @@ export default function Show({ campaign, session, characters, transcriptSegments
     startExtractionPolling()
   }
 
-  // Start polling on mount if already in-progress
+  // ── Recording finalize callback ───────────────────────────────────────────
+  // Defined before the mount useEffect so it can be passed to registerOnFinalized.
+  const CSRF = () =>
+    (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? ''
+
+  /** Called by the context after finalize succeeds or fails. */
+  const handleRecordingFinalized = (audioPath: string | null) => {
+    if (audioPath) setLiveAudioPath(audioPath)
+    setLiveTranscriptionStatus('pending')
+    startTranscriptionPolling()
+  }
+
+  const [showRerecordConfirm, setShowRerecordConfirm] = useState(false)
+
+  const handleStartRecording = () => {
+    if (liveAudioPath) {
+      setShowRerecordConfirm(true)
+    } else {
+      startRecording(session.id, campaign.id, handleRecordingFinalized)
+    }
+  }
+
+  const confirmRerecord = () => {
+    setShowRerecordConfirm(false)
+    startRecording(session.id, campaign.id, handleRecordingFinalized)
+  }
+
+  // Start polling on mount if already in-progress; re-register finalized callback
   useEffect(() => {
+    // Re-register the onFinalized callback so React state setters are fresh
+    // even if the user navigated away and came back while recording was active.
+    registerOnFinalized(session.id, handleRecordingFinalized)
+
     if (session.transcription_status === 'pending' || session.transcription_status === 'processing') {
       startTranscriptionPolling()
     }
@@ -419,18 +460,6 @@ export default function Show({ campaign, session, characters, transcriptSegments
   const statusColors: Record<GameSession['transcription_status'], string> = {
     none: 'muted', pending: 'warning', processing: 'arcane', done: 'success', failed: 'danger', cancelled: 'muted',
   }
-
-  // ── Chunked recording state ───────────────────────────────────────────────
-  const mediaRecorderRef  = useRef<MediaRecorder | null>(null)
-  const timerRef          = useRef<ReturnType<typeof setInterval> | null>(null)
-  const uploadIdRef       = useRef<string | null>(null)
-  const pendingChunksRef  = useRef<Blob[]>([])   // accumulator between flushes
-  const chunkIndexRef     = useRef<number>(0)     // global monotonic chunk counter
-  const mimeTypeRef       = useRef<string>('audio/webm')
-  const isFlushing        = useRef<boolean>(false) // prevent concurrent flushes
-
-  const [isUploading, setIsUploading]         = useState(false)
-  const [uploadProgress, setUploadProgress]   = useState<string | null>(null)
 
   // ── Audio file import ─────────────────────────────────────────────────────
   const importFileRef = useRef<HTMLInputElement | null>(null)
@@ -474,150 +503,10 @@ export default function Show({ campaign, session, characters, transcriptSegments
     }
   }
 
-  const CSRF = () =>
-    (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? ''
-
-  /** POST a single blob as one numbered chunk. Returns false on failure. */
-  const postChunk = async (blob: Blob, index: number): Promise<boolean> => {
-    const fd = new FormData()
-    fd.append('upload_id',   uploadIdRef.current!)
-    fd.append('chunk_index', String(index))
-    fd.append('chunk',       blob, `chunk-${index}.part`)
-    const res = await fetch(`/sessions/${session.id}/record/chunk`, {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': CSRF() },
-      body: fd,
-    })
-    return res.ok
-  }
-
-  /**
-   * Flush all pending chunks to the server.
-   * Called every FLUSH_EVERY_CHUNKS chunks (during recording) and on stop.
-   */
-  const FLUSH_EVERY_CHUNKS = 10 // ~10 s of audio at 1 s timeslice
-
-  const flushPending = async () => {
-    if (isFlushing.current) return
-    if (pendingChunksRef.current.length === 0) return
-    isFlushing.current = true
-
-    const toFlush = pendingChunksRef.current.splice(0)   // drain accumulator
-    const blob    = new Blob(toFlush, { type: mimeTypeRef.current })
-    const index   = chunkIndexRef.current++
-
-    const ok = await postChunk(blob, index)
-    if (!ok) {
-      // Put chunks back so they can be retried on stop
-      pendingChunksRef.current.unshift(...toFlush)
-      console.warn(`Chunk ${index} upload failed — will retry on finalize`)
-    }
-    isFlushing.current = false
-  }
-
-  const startRecording = async () => {
-    try {
-      const stream   = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg'
-      mimeTypeRef.current = mimeType
-
-      // 1. Init upload session on the server
-      const initRes = await fetch(`/sessions/${session.id}/record/init`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': CSRF() },
-      })
-      if (!initRes.ok) {
-        alert('Failed to initialise recording session.')
-        return
-      }
-      const { upload_id } = await initRes.json()
-      uploadIdRef.current  = upload_id
-      pendingChunksRef.current = []
-      chunkIndexRef.current    = 0
-      isFlushing.current       = false
-
-      // 2. Start MediaRecorder with 1 s timeslice
-      const mr = new MediaRecorder(stream, { mimeType })
-      mr.ondataavailable = async (e: BlobEvent) => {
-        if (!e.data || e.data.size === 0) return
-        pendingChunksRef.current.push(e.data)
-        // Flush every FLUSH_EVERY_CHUNKS accumulated chunks
-        if (pendingChunksRef.current.length >= FLUSH_EVERY_CHUNKS) {
-          await flushPending()
-        }
-      }
-      mr.start(1000)
-      mediaRecorderRef.current = mr
-      setIsRecording(true)
-      setRecordingSeconds(0)
-      timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000)
-    } catch {
-      alert('Could not access microphone. Please grant audio permissions.')
-    }
-  }
-
-  const stopRecording = () => {
-    if (!mediaRecorderRef.current) return
-    const mr = mediaRecorderRef.current
-    if (timerRef.current) clearInterval(timerRef.current)
-    setIsRecording(false)
-
-    mr.onstop = async () => {
-      // Stop mic tracks
-      mr.stream.getTracks().forEach(t => t.stop())
-
-      setIsUploading(true)
-      setUploadProgress('Flushing remaining audio…')
-
-      try {
-        // Flush any chunks still pending in the accumulator
-        await flushPending()
-
-        // Wait for any in-flight flush to settle
-        while (isFlushing.current) {
-          await new Promise(r => setTimeout(r, 100))
-        }
-
-        const totalChunks = chunkIndexRef.current
-        setUploadProgress(`Finalising ${totalChunks} chunk${totalChunks !== 1 ? 's' : ''}…`)
-
-        const fd = new FormData()
-        fd.append('upload_id',    uploadIdRef.current!)
-        fd.append('total_chunks', String(totalChunks))
-        fd.append('mime_type',    mimeTypeRef.current)
-
-        const res = await fetch(`/sessions/${session.id}/record/finalize`, {
-          method: 'POST',
-          headers: { 'X-CSRF-TOKEN': CSRF() },
-          body: fd,
-        })
-
-        if (res.ok) {
-          const data = await res.json().catch(() => ({}))
-          if (data.audio_path) setLiveAudioPath(data.audio_path)
-          setIsUploading(false)
-          setUploadProgress(null)
-          setLiveTranscriptionStatus('pending')
-          startTranscriptionPolling()
-        } else {
-          const err = await res.json().catch(() => ({}))
-          setIsUploading(false)
-          setUploadProgress(null)
-          alert('Failed to finalise recording: ' + (err.error ?? res.statusText))
-        }
-      } catch (e) {
-        setIsUploading(false)
-        setUploadProgress(null)
-        alert('Failed to upload recording.')
-      }
-    }
-
-    mr.stop()
-  }
-
   const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
   return (
+    <>
     <AppLayout breadcrumbs={[
       { label: 'Campaigns', href: '/campaigns' },
       { label: campaign.name, href: `/campaigns/${campaign.id}` },
@@ -700,7 +589,7 @@ export default function Show({ campaign, session, characters, transcriptSegments
 
               <div className="flex items-center gap-3 flex-wrap">
                 {!isRecording ? (
-                  <Button variant="rune" onClick={startRecording} size="sm" disabled={isUploading || isImporting || liveTranscriptionStatus === 'processing' || liveTranscriptionStatus === 'pending'}>
+                  <Button variant="rune" onClick={handleStartRecording} size="sm" disabled={isUploading || isImporting || liveTranscriptionStatus === 'processing' || liveTranscriptionStatus === 'pending' || (activeSessionId !== null && activeSessionId !== session.id)}>
                     <div className="w-2 h-2 rounded-full bg-[var(--color-danger)]" />
                     {isUploading ? 'Saving…' : 'Start Recording'}
                   </Button>
@@ -1207,6 +1096,40 @@ export default function Show({ campaign, session, characters, transcriptSegments
         </div>
       </div>
     </AppLayout>
+
+    {/* Re-record confirmation modal */}
+    {showRerecordConfirm && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div
+          className="w-full max-w-sm mx-4 rounded border border-[var(--color-border)] p-6 flex flex-col gap-4"
+          style={{ background: 'var(--color-bg)' }}
+        >
+          <h2 className="font-heading text-lg text-[var(--color-text-white)] tracking-widest uppercase">
+            Replace Recording?
+          </h2>
+          <p className="text-sm text-[var(--color-text-dim)]">
+            This session already has a recording. Starting a new one will overwrite it and clear any existing transcription. This cannot be undone.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <button
+              type="button"
+              onClick={() => setShowRerecordConfirm(false)}
+              className="px-4 py-2 text-xs font-heading tracking-widest uppercase border border-[var(--color-border)] rounded text-[var(--color-text-dim)] hover:border-[var(--color-rune)] hover:text-[var(--color-rune)] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmRerecord}
+              className="px-4 py-2 text-xs font-heading tracking-widest uppercase border border-[var(--color-danger)] rounded text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10 transition-colors"
+            >
+              Yes, Re-record
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
 

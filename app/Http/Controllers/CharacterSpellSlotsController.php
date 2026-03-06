@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Campaign;
 use App\Models\Character;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,8 +28,8 @@ class CharacterSpellSlotsController extends Controller
         ]);
 
         $level = (string) $data['level'];
-        $slots = $character->spell_slots ?? [];
-        $used  = $character->spell_slots_used ?? [];
+        $slots = is_array($character->spell_slots)      ? $character->spell_slots      : [];
+        $used  = is_array($character->spell_slots_used) ? $character->spell_slots_used : [];
 
         $max  = (int) ($slots[$level] ?? 0);
         $curr = (int) ($used[$level] ?? 0);
@@ -44,5 +45,14 @@ class CharacterSpellSlotsController extends Controller
         $character->update(['spell_slots_used' => $used]);
 
         return back()->with('success', "Spell slot updated.");
+    }
+
+    /**
+     * Campaign-scoped variant — same logic, just accepts the campaign route binding.
+     * PATCH /campaigns/{campaign}/characters/{character}/spell-slots
+     */
+    public function updateForCampaign(Request $request, Campaign $campaign, Character $character): RedirectResponse
+    {
+        return $this->update($request, $character);
     }
 }

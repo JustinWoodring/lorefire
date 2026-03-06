@@ -1,6 +1,10 @@
-# 🔥 Lorefire
+# Lorefire
 
-<img width="1056" height="800" alt="Screenshot 2026-03-06 at 8 20 58 AM" src="https://github.com/user-attachments/assets/d86597f8-4304-40c7-b542-4c48a4c74f49" />
+<p align="center">
+  <img width="128" height="128" alt="Lorefire" src="public/logo.png" />
+</p>
+
+<img width="1056" height="800" alt="Screenshot 2026-03-06 at 8 20 58 AM" src="https://github.com/user-attachments/assets/d86597f8-4304-40c7-b542-4c48a4c74f49" />
 
 
 > A local-first D&D 5e campaign companion for macOS. Record sessions, auto-transcribe with AI, generate bardic summaries, track characters, and build your campaign archive — all on your machine, no cloud required.
@@ -132,12 +136,69 @@ Two art styles are available: **Lifelike** (realistic fantasy painting) and **Co
 
 ComfyUI is optional — it lets you generate portraits and scene art locally using Stable Diffusion / FLUX models.
 
-1. Install ComfyUI: [https://github.com/comfyanonymous/ComfyUI](https://github.com/comfyanonymous/ComfyUI)
-2. Download a checkpoint model (e.g. [FLUX.1-dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) or any SD checkpoint) and place it in `ComfyUI/models/checkpoints/`
-3. Start ComfyUI: `python main.py` — it runs on `http://localhost:8188` by default
-4. In Lorefire Settings, set **Image Generation Provider** to `ComfyUI` and confirm the base URL
+### 1. Install ComfyUI
 
-Lorefire submits generation jobs via the ComfyUI API. The active checkpoint in ComfyUI is used automatically — swap the model in ComfyUI to change the style.
+Follow the official install guide: [https://github.com/comfyanonymous/ComfyUI](https://github.com/comfyanonymous/ComfyUI)
+
+```bash
+git clone https://github.com/comfyanonymous/ComfyUI.git
+cd ComfyUI
+pip install -r requirements.txt
+```
+
+### 2. Install ComfyUI-Manager (required)
+
+Lorefire's workflows use custom nodes. [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) lets you install them in one click.
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/ltdrdata/ComfyUI-Manager.git
+```
+
+Restart ComfyUI, then open the Manager (button in the top-right of the UI) and click **Install Missing Custom Nodes**.
+
+### 3. Required custom nodes
+
+Install these via ComfyUI-Manager → **Install Custom Nodes**:
+
+| Node | Purpose |
+|---|---|
+| [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) | Node manager (already installed above) |
+| [rgthree-comfy](https://github.com/rgthree/rgthree-comfy) | Power Lora Loader used in FLUX workflows |
+| [ComfyUI_IPAdapter_plus](https://github.com/cubiq/ComfyUI_IPAdapter_plus) | IP-Adapter for portrait consistency (optional but recommended) |
+
+After installing, restart ComfyUI and use Manager → **Install Missing Custom Nodes** to resolve any remaining dependencies.
+
+### 4. Download a checkpoint model
+
+Place checkpoint files in `ComfyUI/models/checkpoints/`. Recommended models:
+
+| Model | Notes |
+|---|---|
+| [FLUX.1-dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) | Best quality; requires HuggingFace login. Download `flux1-dev.safetensors`. |
+| [FLUX.1-schnell](https://huggingface.co/black-forest-labs/FLUX.1-schnell) | Faster, fewer steps needed. |
+| Any SDXL checkpoint | e.g. [RealVisXL](https://civitai.com/models/139562). Place in `checkpoints/`. |
+
+For FLUX models you also need the text encoders and VAE — place them in:
+- `ComfyUI/models/clip/` — `clip_l.safetensors`, `t5xxl_fp16.safetensors`
+- `ComfyUI/models/vae/` — `ae.safetensors`
+
+These can all be downloaded from the [FLUX.1-dev HuggingFace repo](https://huggingface.co/black-forest-labs/FLUX.1-dev/tree/main).
+
+### 5. Start ComfyUI
+
+```bash
+cd ComfyUI
+python main.py
+# Runs on http://localhost:8188 by default
+# For GPU-poor machines: python main.py --lowvram
+```
+
+### 6. Configure Lorefire
+
+In **Settings → Image Generation**, set the provider to `ComfyUI` and confirm the base URL (`http://localhost:8188`).
+
+Lorefire submits generation jobs via the ComfyUI API. The active checkpoint in ComfyUI is used automatically — swap the model in ComfyUI's checkpoint loader to change style.
 
 ---
 
