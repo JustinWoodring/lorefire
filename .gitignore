@@ -1,5 +1,16 @@
 *.log
 .DS_Store
+/resources/python/venv
+/resources/python/whisper_models
+/database/nativephp.sqlite
+/database/nativephp.sqlite-shm
+/database/nativephp.sqlite-wal
+/storage/app/audio
+/storage/app/portraits
+/storage/app/party-portraits
+/storage/app/scene-images
+/storage/app/transcripts
+/storage/app/exports
 .env
 .env.backup
 .env.production
