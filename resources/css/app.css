@@ -1,0 +1,165 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.ts';
+@source '../**/*.tsx';
+
+/* ─── Google Fonts ────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+/* ─── Theme tokens ────────────────────────────────────────────────────────── */
+@theme {
+    /* Fonts */
+    --font-heading: 'Cinzel', 'Palatino Linotype', serif;
+    --font-sans:    'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-mono:    'Space Mono', ui-monospace, monospace;
+
+    /* Core palette — deep obsidian backgrounds */
+    --color-void:       #080a0f;
+    --color-abyss:      #0e1118;
+    --color-deep:       #141820;
+    --color-surface:    #1b2030;
+    --color-raised:     #222840;
+    --color-border:     #2e3650;
+    --color-muted:      #3d4a6b;
+
+    /* Text */
+    --color-text-dim:   #6b7a99;
+    --color-text-base:  #b0bcd4;
+    --color-text-bright:#e4eaf5;
+    --color-text-white: #f0f4ff;
+
+    /* Rune accent — amber/gold glow */
+    --color-rune:       #d4a017;
+    --color-rune-bright:#f0c040;
+    --color-rune-dim:   #7a5a0a;
+    --color-rune-glow:  rgba(212, 160, 23, 0.15);
+
+    /* Secondary accent — cool blue-purple */
+    --color-arcane:     #6b7fff;
+    --color-arcane-dim: #2d3880;
+
+    /* Status */
+    --color-danger:     #c0392b;
+    --color-danger-dim: #5c1a15;
+    --color-success:    #27ae60;
+    --color-success-dim:#0f4a28;
+    --color-warning:    #e67e22;
+
+    /* HP bar colors */
+    --color-hp-full:    #27ae60;
+    --color-hp-mid:     #e67e22;
+    --color-hp-low:     #c0392b;
+}
+
+/* ─── Base styles ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body, #app {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-void);
+    color: var(--color-text-base);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-abyss); }
+::-webkit-scrollbar-thumb { background: var(--color-muted); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-dim); }
+
+/* ─── Rune glow utility ───────────────────────────────────────────────────── */
+.rune-glow {
+    box-shadow: 0 0 12px var(--color-rune-glow), 0 0 2px var(--color-rune-dim);
+}
+
+.rune-glow-text {
+    text-shadow: 0 0 12px rgba(212, 160, 23, 0.6);
+}
+
+/* ─── Rune divider ────────────────────────────────────────────────────────── */
+.rune-divider {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-rune-dim);
+}
+.rune-divider::before,
+.rune-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-rune-dim), transparent);
+}
+
+/* ─── Runic border accent ─────────────────────────────────────────────────── */
+.runic-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+.runic-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-rune), transparent);
+    opacity: 0.6;
+}
+
+/* ─── HP bar ──────────────────────────────────────────────────────────────── */
+.hp-bar-track {
+    background: var(--color-deep);
+    border-radius: 2px;
+    height: 6px;
+    overflow: hidden;
+}
+.hp-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+}
+
+/* ─── Cinzel headings ─────────────────────────────────────────────────────── */
+h1, h2, h3, .heading {
+    font-family: var(--font-heading);
+    letter-spacing: 0.04em;
+    color: var(--color-text-white);
+}
+
+/* ─── Focus ring ──────────────────────────────────────────────────────────── */
+*:focus-visible {
+    outline: 2px solid var(--color-rune);
+    outline-offset: 2px;
+}
+
+/* ─── NativePHP drag region (title bar) ──────────────────────────────────── */
+.drag-region {
+    -webkit-app-region: drag;
+}
+.no-drag {
+    -webkit-app-region: no-drag;
+}
+
+/* ─── Progress bar indeterminate shimmer ─────────────────────────────────── */
+@keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+}

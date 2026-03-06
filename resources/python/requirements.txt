@@ -1,0 +1,34 @@
+# WhisperX + dependencies for Lorefire transcription pipeline.
+# Pinned to known-compatible versions.
+# Install via: pip install -r requirements.txt
+
+# Core transcription
+whisperx>=3.1.1
+faster-whisper>=1.0.0
+
+# Audio processing
+# torch 2.5.x — required by pyannote 3.x VAD model checkpoint compatibility
+# torch 2.6+ changed weights_only default which breaks the bundled VAD model
+torch==2.5.1
+torchaudio==2.5.1
+
+# HuggingFace — whisperx 3.8.x requires <1.0.0
+huggingface-hub<1.0.0
+transformers<5.0.0
+
+# Speaker diarization (optional — requires HuggingFace token)
+# pyannote 4.x is incompatible with the VAD model bundled in whisperx 3.x
+pyannote.audio>=3.1.0,<4.0.0
+
+# Audio file loading / conversion
+ffmpeg-python>=0.2.0
+
+# Alignment
+ctranslate2>=3.24.0
+
+# Utilities
+numpy>=1.24.0
+pandas>=2.0.0
+PyYAML>=6.0
+einops>=0.7.0
+nltk>=3.9.1
