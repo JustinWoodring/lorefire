@@ -544,12 +544,15 @@ export default function Show({ campaign, session, characters, transcriptSegments
             <Button
               variant="ghost"
               size="sm"
+              disabled={isRecording && activeSessionId === session.id}
+              title={isRecording && activeSessionId === session.id ? 'Stop recording before deleting this session' : undefined}
               onClick={() => {
+                if (isRecording && activeSessionId === session.id) return
                 if (confirm(`Delete "${session.title}"? This cannot be undone.`)) {
                   router.delete(`/campaigns/${campaign.id}/sessions/${session.id}`)
                 }
               }}
-              className="text-[var(--color-danger)] hover:border-[var(--color-danger)]"
+              className="text-[var(--color-danger)] hover:border-[var(--color-danger)] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Delete
             </Button>
