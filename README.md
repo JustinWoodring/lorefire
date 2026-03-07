@@ -4,6 +4,8 @@
   <img width="128" height="128" alt="Lorefire" src="public/logo.png" />
 </p>
 
+[![Release](https://github.com/JustinWoodring/lorefire/actions/workflows/release.yml/badge.svg)](https://github.com/JustinWoodring/lorefire/actions/workflows/release.yml)
+
 <img width="1056" height="800" alt="Screenshot 2026-03-06 at 8 20 58 AM" src="https://github.com/user-attachments/assets/d86597f8-4304-40c7-b542-4c48a4c74f49" />
 
 
