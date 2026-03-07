@@ -215,19 +215,30 @@ function CharacterCard({ character, campaignId }: { character: Character; campai
 
   const hasSpellSlots = !!(character.spell_slots && Object.keys(character.spell_slots).length > 0)
 
-  // Lay on Hands
-  const layMax     = typeof classFeatures.lay_on_hands_max === 'number' ? classFeatures.lay_on_hands_max : null
-  const layCurrent = typeof classFeatures.lay_on_hands_current === 'number' ? classFeatures.lay_on_hands_current : null
+  // Lay on Hands — fall back to level*5 for Paladins who haven't saved keys yet
+  const defaultLayMax = character.class === 'Paladin' ? character.level * 5 : null
+  const layMax     = typeof classFeatures.lay_on_hands_max === 'number'
+    ? classFeatures.lay_on_hands_max
+    : defaultLayMax
+  const layCurrent = typeof classFeatures.lay_on_hands_current === 'number'
+    ? classFeatures.lay_on_hands_current
+    : layMax  // default to full pool on first render
   const hasLayOnHands = layMax !== null && layCurrent !== null
 
   const adjustLay = async (delta: number) => {
     if (!hasLayOnHands) return
     const next = Math.max(0, Math.min(layMax!, layCurrent! + delta))
     setClassFeatures(prev => ({ ...prev, lay_on_hands_current: next }))
+    // If max was never persisted, write it now alongside current
+    const updates: Record<string, number> = { lay_on_hands_current: next }
+    if (typeof classFeatures.lay_on_hands_max !== 'number' && layMax !== null) {
+      updates.lay_on_hands_max = layMax
+      setClassFeatures(prev => ({ ...prev, lay_on_hands_max: layMax }))
+    }
     await fetch(classFeaturesUrl, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
-      body: JSON.stringify({ updates: { lay_on_hands_current: next } }),
+      body: JSON.stringify({ updates }),
     })
   }
 

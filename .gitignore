@@ -30,6 +30,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+/dist
 Homestead.json
 Homestead.yaml
 Thumbs.db

@@ -433,10 +433,15 @@ export default function Show({ campaign, character, imageGenProvider }: Props) {
         )}
 
         {/* ── Class Features display ─────────────────────────────────── */}
-        {tab === 'stats' && character.class_features && Object.keys(character.class_features).length > 0 && (
+        {tab === 'stats' && (character.class_features && Object.keys(character.class_features).length > 0 || character.class === 'Paladin') && (
           <Card>
             <CardHeader title={`${character.class} Features`} />
-            <ClassFeaturesDisplay cf={character.class_features} updateUrl={classFeaturesUrl} />
+            <ClassFeaturesDisplay
+              cf={character.class_features ?? {}}
+              updateUrl={classFeaturesUrl}
+              characterClass={character.class}
+              level={character.level}
+            />
           </Card>
         )}
 
@@ -607,19 +612,30 @@ async function patchClassFeatures(url: string, updates: Record<string, unknown>)
   })
 }
 
-function ClassFeaturesDisplay({ cf, updateUrl }: { cf: CF; updateUrl: string }) {
+function ClassFeaturesDisplay({ cf, updateUrl, characterClass, level }: { cf: CF; updateUrl: string; characterClass?: string; level?: number }) {
   const [local, setLocal] = useState<CF>({ ...cf })
 
-  // Lay on Hands — interactive pool tracker
-  const layMax = typeof local.lay_on_hands_max === 'number' ? local.lay_on_hands_max : null
-  const layCurrent = typeof local.lay_on_hands_current === 'number' ? local.lay_on_hands_current : null
+  // Lay on Hands — fall back to level*5 for Paladins who haven't saved keys yet
+  const defaultLayMax = characterClass === 'Paladin' && level ? level * 5 : null
+  const layMax = typeof local.lay_on_hands_max === 'number'
+    ? local.lay_on_hands_max
+    : defaultLayMax
+  const layCurrent = typeof local.lay_on_hands_current === 'number'
+    ? local.lay_on_hands_current
+    : layMax  // default to full pool on first render
   const hasLayOnHands = layMax !== null && layCurrent !== null
 
   const adjustLay = async (delta: number) => {
     if (!hasLayOnHands) return
     const next = Math.max(0, Math.min(layMax!, layCurrent! + delta))
     setLocal(prev => ({ ...prev, lay_on_hands_current: next }))
-    await patchClassFeatures(updateUrl, { lay_on_hands_current: next })
+    // If max was never persisted, write it now alongside current
+    const updates: Record<string, number> = { lay_on_hands_current: next }
+    if (typeof local.lay_on_hands_max !== 'number' && layMax !== null) {
+      updates.lay_on_hands_max = layMax
+      setLocal(prev => ({ ...prev, lay_on_hands_max: layMax }))
+    }
+    await patchClassFeatures(updateUrl, updates)
   }
 
   // Generic display for all other keys
