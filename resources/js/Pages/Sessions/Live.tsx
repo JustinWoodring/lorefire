@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Head, router } from '@inertiajs/react'
+import { Head, router, Link } from '@inertiajs/react'
 import ReactMarkdown from 'react-markdown'
 import AppLayout from '@/Layouts/AppLayout'
 import { Card, CardHeader } from '@/Components/Card'
@@ -103,7 +103,7 @@ function OraclePanel({ campaignContext, hasLlm }: { campaignContext: Campaign; h
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-center p-6">
         <p className="text-sm" style={{ color: 'var(--color-text-dim)' }}>No LLM provider configured.</p>
-        <a href="/settings" className="text-xs underline" style={{ color: 'var(--color-rune)' }}>Open Settings</a>
+        <Link href="/settings" className="text-xs underline" style={{ color: 'var(--color-rune)' }}>Open Settings</Link>
       </div>
     )
   }
@@ -325,9 +325,9 @@ function CharacterCard({ character, campaignId }: { character: Character; campai
             {character.player_name && ` · ${character.player_name}`}
           </p>
         </div>
-        <a href={`${baseUrl}/edit`} className="text-[10px] shrink-0 hover:underline" style={{ color: 'var(--color-rune)' }}>
+        <Link href={`${baseUrl}/edit`} className="text-[10px] shrink-0 hover:underline" style={{ color: 'var(--color-rune)' }}>
           Edit
-        </a>
+        </Link>
       </div>
 
       {/* ── HP block ──────────────────────────────────────────────────────── */}
@@ -643,7 +643,7 @@ function SessionPanel({ campaign, session }: { campaign: Campaign; session: Game
         {!isThisSession && !isRecording && (
           <p className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
             Recording controls are on the{' '}
-            <a href={sessionUrl} className="underline" style={{ color: 'var(--color-rune)' }}>session page</a>.
+            <Link href={sessionUrl} className="underline" style={{ color: 'var(--color-rune)' }}>session page</Link>.
           </p>
         )}
       </div>
@@ -651,12 +651,12 @@ function SessionPanel({ campaign, session }: { campaign: Campaign; session: Game
       {/* Quick links */}
       <div className="flex flex-col gap-2">
         <p className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--color-text-dim)' }}>Quick Links</p>
-        <a href={sessionUrl} className="flex items-center gap-2 text-xs hover:underline" style={{ color: 'var(--color-rune)' }}>
+        <Link href={sessionUrl} className="flex items-center gap-2 text-xs hover:underline" style={{ color: 'var(--color-rune)' }}>
           Full Session Page →
-        </a>
-        <a href={`/campaigns/${campaign.id}`} className="flex items-center gap-2 text-xs hover:underline" style={{ color: 'var(--color-rune)' }}>
+        </Link>
+        <Link href={`/campaigns/${campaign.id}`} className="flex items-center gap-2 text-xs hover:underline" style={{ color: 'var(--color-rune)' }}>
           Campaign Overview →
-        </a>
+        </Link>
       </div>
 
       {/* Session notes preview */}
@@ -737,9 +737,9 @@ export default function Live({ campaign, session, characters, hasLlm, campaignCo
             <div className="flex items-center justify-center flex-1">
               <p className="text-sm" style={{ color: 'var(--color-text-dim)' }}>
                 No characters assigned to this session.{' '}
-                <a href={`/campaigns/${campaign.id}/sessions/${session.id}/edit`} className="underline" style={{ color: 'var(--color-rune)' }}>
+                <Link href={`/campaigns/${campaign.id}/sessions/${session.id}/edit`} className="underline" style={{ color: 'var(--color-rune)' }}>
                   Edit session
-                </a>{' '}
+                </Link>{' '}
                 to add participants.
               </p>
             </div>

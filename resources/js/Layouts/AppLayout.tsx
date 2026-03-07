@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import { Toast } from '@/Components/Toast'
 import { useRecording } from '@/Contexts/RecordingContext'
@@ -80,6 +80,22 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
   const { isRecording, recordingSeconds, isUploading, uploadProgress, activeLiveUrl } = useRecording()
 
   const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+
+  // Recording-start modal
+  const [showRecordingModal, setShowRecordingModal] = useState(false)
+  const prevRecording = useRef(false)
+
+  useEffect(() => {
+    if (isRecording && !prevRecording.current) {
+      setShowRecordingModal(true)
+      const t = setTimeout(() => setShowRecordingModal(false), 6000)
+      prevRecording.current = true
+      return () => clearTimeout(t)
+    }
+    if (!isRecording) {
+      prevRecording.current = false
+    }
+  }, [isRecording])
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-void)' }}>
@@ -214,6 +230,51 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
 
       {/* Global toast notifications */}
       <Toast />
+
+      {/* Recording-start modal */}
+      {showRecordingModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+          style={{ background: 'rgba(0,0,0,0.5)' }}
+        >
+          <div
+            className="pointer-events-auto relative flex flex-col gap-4 rounded-lg p-6 shadow-2xl w-80"
+            style={{ background: 'var(--color-abyss)', border: '1px solid rgba(220,38,38,0.4)' }}
+          >
+            {/* Dismiss */}
+            <button
+              onClick={() => setShowRecordingModal(false)}
+              className="absolute top-3 right-3 text-xs opacity-50 hover:opacity-100 transition-opacity"
+              style={{ color: 'var(--color-text-dim)' }}
+            >
+              ✕
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse shrink-0" />
+              <span className="font-heading text-sm tracking-widest uppercase" style={{ color: '#f87171' }}>
+                Recording Started
+              </span>
+            </div>
+
+            {/* Timer */}
+            <p className="text-xs font-mono" style={{ color: 'var(--color-text-dim)' }}>
+              {fmtTime(recordingSeconds)}
+            </p>
+
+            {/* CTA */}
+            <Link
+              href={activeLiveUrl ?? '#'}
+              onClick={() => setShowRecordingModal(false)}
+              className="flex items-center justify-center gap-2 rounded px-4 py-2 text-sm font-heading tracking-wide transition-opacity hover:opacity-90"
+              style={{ background: 'var(--color-rune)', color: 'var(--color-void)' }}
+            >
+              Go to Live Session →
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
