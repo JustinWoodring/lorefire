@@ -100,10 +100,10 @@ class GeneratePortrait implements ShouldQueue
 
     protected function callZai(string $prompt, string $model): ?string
     {
-        $key = AppSetting::get('zai_api_key');
+        $key = AppSetting::get('image_gen_zai_api_key') ?: AppSetting::get('zai_api_key');
         if (! $key) return null;
 
-        $r = Http::withToken($key)->timeout(90)->post('https://api.z.ai/api/coding/paas/v4/images/generations', [
+        $r = Http::withToken($key)->timeout(90)->post(AppSetting::ZAI_STANDARD_URL . '/images/generations', [
             'model'  => $model,
             'prompt' => $prompt,
             'size'   => '1280x1280',

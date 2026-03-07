@@ -53,7 +53,7 @@ class AskOracle implements ShouldQueue
     {
         $key     = AppSetting::get('zai_api_key');
         $model   = AppSetting::get('zai_model', 'glm-4.6');
-        $baseUrl = AppSetting::get('zai_base_url', 'https://api.z.ai/api/coding/paas/v4');
+        $baseUrl = AppSetting::get('zai_base_url', AppSetting::ZAI_CODING_URL);
 
         if (! $key) return null;
 

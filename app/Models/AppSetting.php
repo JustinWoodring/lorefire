@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class AppSetting extends Model
 {
+    /** z.ai GLM Coding Plan endpoint (requires a coding-plan subscription key). */
+    public const ZAI_CODING_URL = 'https://api.z.ai/api/coding/paas/v4';
+
+    /** z.ai standard API endpoint (regular API key, also required for image generation). */
+    public const ZAI_STANDARD_URL = 'https://api.z.ai/v1';
+
     protected $fillable = [
         'key',
         'value',

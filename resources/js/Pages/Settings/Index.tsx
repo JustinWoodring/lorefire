@@ -26,14 +26,15 @@ export default function Index({ settings }: Props) {
     ollama_model:      settings.ollama_model ?? 'llama3',
     zai_api_key:       settings.zai_api_key ?? '',
     zai_model:         settings.zai_model ?? 'glm-4.6',
-    zai_base_url:      settings.zai_base_url ?? 'https://api.z.ai/api/coding/paas/v4',
+    zai_plan:          settings.zai_plan ?? 'coding',
     whisperx_model:    settings.whisperx_model ?? 'base',
     whisperx_language: settings.whisperx_language ?? 'en',
     huggingface_token: settings.huggingface_token ?? '',
-    default_art_style:   settings.default_art_style ?? 'lifelike',
-    image_gen_provider:  settings.image_gen_provider ?? 'none',
-    image_gen_model:     settings.image_gen_model ?? '',
-    comfyui_base_url:    settings.comfyui_base_url ?? 'http://localhost:8188',
+    default_art_style:    settings.default_art_style ?? 'lifelike',
+    image_gen_provider:   settings.image_gen_provider ?? 'none',
+    image_gen_model:      settings.image_gen_model ?? '',
+    image_gen_zai_api_key: settings.image_gen_zai_api_key ?? '',
+    comfyui_base_url:     settings.comfyui_base_url ?? 'http://localhost:8188',
   })
 
   // Poll when running
@@ -177,13 +178,36 @@ export default function Index({ settings }: Props) {
                 placeholder="glm-4.6"
                 hint="Any model supported by the endpoint, e.g. glm-4.6, glm-4.7, glm-4-flash."
               />
-              <Input
-                label="API Base URL"
-                value={data.zai_base_url}
-                onChange={e => setData('zai_base_url', e.target.value)}
-                placeholder="https://api.z.ai/api/coding/paas/v4"
-                hint="GLM Coding Plan endpoint. Your coding plan API key is separate from a regular z.ai API key — use the key from your coding plan subscription here."
-              />
+              {/* Plan toggle */}
+              <div className="flex flex-col gap-1.5">
+                <p className="text-xs font-heading tracking-wide" style={{ color: 'var(--color-text-dim)' }}>Subscription Plan</p>
+                <div className="flex gap-2">
+                  {([
+                    { value: 'coding',   label: 'Coding Plan',   desc: 'Uses the GLM coding-plan endpoint. Requires a coding-plan subscription key.' },
+                    { value: 'standard', label: 'Standard API',  desc: 'Uses the standard z.ai API endpoint. Cannot be used for image generation.' },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setData('zai_plan', opt.value)}
+                      className="flex-1 text-left px-3 py-2 rounded border text-xs transition-all"
+                      style={{
+                        borderColor: data.zai_plan === opt.value ? 'var(--color-rune)' : 'var(--color-border)',
+                        background:  data.zai_plan === opt.value ? 'var(--color-rune-glow)' : 'var(--color-deep)',
+                        color:       data.zai_plan === opt.value ? 'var(--color-rune-bright)' : 'var(--color-text-dim)',
+                      }}
+                    >
+                      <span className="font-heading tracking-wide block">{opt.label}</span>
+                      <span className="text-[10px] leading-snug block mt-0.5" style={{ color: 'var(--color-text-dim)' }}>{opt.desc}</span>
+                    </button>
+                  ))}
+                </div>
+                {data.zai_plan === 'coding' && (
+                  <p className="text-[10px] leading-relaxed" style={{ color: 'var(--color-text-dim)' }}>
+                    Note: the coding-plan key is separate from a standard z.ai API key. It cannot be used for image generation.
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -297,8 +321,16 @@ export default function Index({ settings }: Props) {
           {data.image_gen_provider === 'zai' && (
             <div className="flex flex-col gap-3">
               <p className="text-xs text-[var(--color-text-dim)] -mt-1">
-                Uses your z.ai API key and base URL configured above. Note: the coding plan API key cannot be used for image generation — you need a separate standard z.ai API key and must set the base URL to the standard z.ai endpoint.
+                Requires a standard z.ai API key — the coding-plan key does not work for image generation.
               </p>
+              <Input
+                label="z.ai API Key (Image Generation)"
+                type="password"
+                value={data.image_gen_zai_api_key}
+                onChange={e => setData('image_gen_zai_api_key', e.target.value)}
+                placeholder="zai-…"
+                hint="Standard z.ai API key for image generation. Stored locally only."
+              />
               <Input
                 label="Image Model"
                 value={data.image_gen_model}

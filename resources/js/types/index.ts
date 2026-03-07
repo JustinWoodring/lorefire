@@ -258,6 +258,7 @@ export interface AppSettings {
   ollama_model: string | null
   zai_api_key: string | null
   zai_model: string | null
+  zai_plan: string | null
   zai_base_url: string | null
   whisperx_model: string | null
   whisperx_language: string | null
@@ -265,6 +266,7 @@ export interface AppSettings {
   default_art_style: string | null
   image_gen_provider: string | null
   image_gen_model: string | null
+  image_gen_zai_api_key: string | null
   comfyui_base_url: string | null
 }
 
