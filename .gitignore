@@ -1,6 +1,7 @@
 *.log
 .DS_Store
 /resources/python/venv
+/resources/python/runtime
 /resources/python/whisper_models
 /database/nativephp.sqlite
 /database/nativephp.sqlite-shm

@@ -6,8 +6,15 @@
 #
 #   --gpu  Install GPU (CUDA) versions of torch/torchaudio instead of CPU.
 #
-# After running, activate with:
-#   source resources/python/venv/bin/activate
+# Supported platforms (auto-detected):
+#   macOS arm64  (Apple Silicon)     -- actively shipped
+#   macOS x86_64 (Intel Mac)         -- ready, not yet shipped
+#   Linux x86_64                     -- ready, not yet shipped
+#   Windows x86_64 (Git Bash/MSYS2)  -- ready, not yet shipped
+#
+# The bundled python-build-standalone runtime is used when present
+# (resources/python/runtime/).  Falls back to system Python for dev use.
+# Download the runtime with: bash resources/python/download_runtime.sh
 #
 # The app's TranscribeAudio job calls the venv's Python directly:
 #   resources/python/venv/bin/python resources/python/run_whisperx.py ...
@@ -18,6 +25,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="$SCRIPT_DIR/venv"
 REQ_FILE="$SCRIPT_DIR/requirements.txt"
 GPU=false
+
+# Platform-specific paths inside the bundled python-build-standalone runtime
+# and inside the venv.  Windows (Git Bash / MSYS2) uses Scripts/ and .exe.
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*)
+    BUNDLED_RUNTIME="$SCRIPT_DIR/runtime/python.exe"
+    VENV_BIN_DIR="$VENV_DIR/Scripts"
+    ;;
+  *)
+    BUNDLED_RUNTIME="$SCRIPT_DIR/runtime/bin/python3"
+    VENV_BIN_DIR="$VENV_DIR/bin"
+    ;;
+esac
 
 # Parse args
 for arg in "$@"; do
@@ -33,19 +53,34 @@ echo "    Venv dir   : $VENV_DIR"
 echo "    GPU mode   : $GPU"
 echo ""
 
-# -- Check Python --------------------------------------------------------
+# -- Locate Python -------------------------------------------------------
+# Prefer the bundled python-build-standalone runtime (portable, no system dep).
+# Fall back to PATH only so developers can still run setup.sh manually without
+# the runtime present (e.g. CI or dev machines with a system Python).
 PYTHON_BIN=""
-for candidate in python3.11 python3.10 python3.9 python3 python; do
-  if command -v "$candidate" &>/dev/null; then
-    PYTHON_VERSION=$("$candidate" -c "import sys; print(sys.version_info[:2])")
-    echo "    Found: $candidate ($PYTHON_VERSION)"
-    PYTHON_BIN="$candidate"
-    break
-  fi
-done
+
+if [ -x "$BUNDLED_RUNTIME" ]; then
+  PYTHON_VERSION=$("$BUNDLED_RUNTIME" -c "import sys; print(sys.version_info[:2])")
+  echo "    Using bundled runtime: $BUNDLED_RUNTIME ($PYTHON_VERSION)"
+  PYTHON_BIN="$BUNDLED_RUNTIME"
+else
+  echo "    Bundled runtime not found at $BUNDLED_RUNTIME"
+  echo "    Falling back to system Python..."
+  for candidate in python3.12 python3.11 python3.10 python3.9 python3 python; do
+    if command -v "$candidate" &>/dev/null; then
+      PYTHON_VERSION=$("$candidate" -c "import sys; print(sys.version_info[:2])")
+      echo "    Found system Python: $candidate ($PYTHON_VERSION)"
+      PYTHON_BIN="$candidate"
+      break
+    fi
+  done
+fi
 
 if [ -z "$PYTHON_BIN" ]; then
-  echo "ERROR: Python 3.9+ is required but was not found in PATH."
+  echo "ERROR: No Python interpreter found."
+  echo "  Expected bundled runtime at: $BUNDLED_RUNTIME"
+  echo "  To download it, run: bash $SCRIPT_DIR/download_runtime.sh"
+  echo "  Or install Python 3.9+ system-wide and re-run this script."
   exit 1
 fi
 
@@ -59,15 +94,18 @@ if ! command -v ffmpeg &>/dev/null; then
 fi
 
 # -- Create venv ---------------------------------------------------------
+# --copies ensures the venv contains actual binaries, not symlinks back into
+# the runtime directory.  This makes the venv fully self-contained so it
+# works even after the app is relocated (e.g. inside the packaged .app).
 if [ ! -d "$VENV_DIR" ]; then
   echo "==> Creating virtual environment at $VENV_DIR..."
-  "$PYTHON_BIN" -m venv "$VENV_DIR"
+  "$PYTHON_BIN" -m venv --copies "$VENV_DIR"
 else
   echo "==> Virtual environment already exists at $VENV_DIR"
 fi
 
-VENV_PYTHON="$VENV_DIR/bin/python"
-VENV_PIP="$VENV_DIR/bin/pip"
+VENV_PYTHON="$VENV_BIN_DIR/python"
+VENV_PIP="$VENV_BIN_DIR/pip"
 
 # -- Upgrade pip ---------------------------------------------------------
 echo "==> Upgrading pip..."

@@ -154,6 +154,11 @@ return [
      * Define your own scripts to run before and after the build process.
      */
     'prebuild' => [
+        // Download the self-contained Python runtime for the current platform.
+        // The runtime is extracted to resources/python/runtime/ and is gitignored.
+        // It must be present before electron-builder packages the app so that
+        // the .app ships a working Python interpreter without any system dependency.
+        'bash resources/python/download_runtime.sh',
         'npm run build',
     ],
 
