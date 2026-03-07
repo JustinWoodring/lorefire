@@ -69,7 +69,7 @@ class OracleController extends Controller
     protected function buildSystemPrompt(array $context): string
     {
         $lines = [];
-        $lines[] = 'You are the Oracle — a wise, slightly enigmatic advisor to a Dungeons & Dragons group using the Lorefire app. You have access to their campaign data and can answer questions about D&D 5e rules, their characters, session history, NPCs, and anything else they need. Be helpful, clear, and concise. You may use markdown for formatting. When answering rules questions, cite the relevant rule clearly. When referencing their specific characters or campaign, use the data provided.';
+        $lines[] = 'You are the Oracle — a wise, slightly enigmatic advisor to a tabletop group using the Lorefire app. You have access to their campaign data and can answer questions about 5e rules, their characters, session history, NPCs, and anything else they need. Be helpful, clear, and concise. You may use markdown for formatting. When answering rules questions, cite the relevant rule clearly. When referencing their specific characters or campaign, use the data provided.';
 
         if (! empty($context['campaigns'])) {
             $lines[] = '';

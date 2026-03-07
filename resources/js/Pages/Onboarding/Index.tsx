@@ -182,7 +182,7 @@ export default function Onboarding({ python_status, python_error }: Props) {
                     Welcome, Chronicler
                   </h1>
                   <p className="text-sm text-[var(--color-text-dim)] leading-relaxed max-w-sm">
-                    Lorefire is your local-first chronicle for 5e campaigns, characters, and the stories you forge at the table.
+                    Lorefire is your local-first chronicle for 5e campaigns — built for the table, running entirely on your machine.
                     Let's take a few moments to get everything ready.
                   </p>
                 </div>

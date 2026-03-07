@@ -15,7 +15,7 @@ interface Props {
 }
 
 const SUGGESTED_PROMPTS = [
-  'What are the rules for grappling in D&D 5e?',
+  'What are the rules for grappling in 5e?',
   'Summarize my most recent session.',
   'What are the conditions and their effects?',
   'How does spellcasting concentration work?',

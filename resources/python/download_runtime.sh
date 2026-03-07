@@ -7,11 +7,10 @@
 # the app.
 #
 # Supported platforms (auto-detected):
-#   macOS arm64  (Apple Silicon)     -- actively shipped
-#   macOS x86_64 (Intel Mac)         -- ready, not yet shipped
-#   Linux x86_64                     -- ready, not yet shipped
-#   Windows x86_64 (via Git Bash /
-#                   MSYS2 / WSL)     -- ready, not yet shipped
+#   macOS arm64  (Apple Silicon)
+#   macOS x86_64 (Intel)
+#   Linux x86_64
+#   Windows x86_64 (via Git Bash / MSYS2 / WSL)
 #
 # Usage (from project root):
 #   bash resources/python/download_runtime.sh

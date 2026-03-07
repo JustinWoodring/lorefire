@@ -7,10 +7,10 @@
 #   --gpu  Install GPU (CUDA) versions of torch/torchaudio instead of CPU.
 #
 # Supported platforms (auto-detected):
-#   macOS arm64  (Apple Silicon)     -- actively shipped
-#   macOS x86_64 (Intel Mac)         -- ready, not yet shipped
-#   Linux x86_64                     -- ready, not yet shipped
-#   Windows x86_64 (Git Bash/MSYS2)  -- ready, not yet shipped
+#   macOS arm64  (Apple Silicon)
+#   macOS x86_64 (Intel)
+#   Linux x86_64
+#   Windows x86_64 (Git Bash/MSYS2)
 #
 # The bundled python-build-standalone runtime is used when present
 # (resources/python/runtime/).  Falls back to system Python for dev use.
@@ -89,7 +89,7 @@ if ! command -v ffmpeg &>/dev/null; then
   echo ""
   echo "WARNING: ffmpeg not found in PATH."
   echo "  WhisperX requires ffmpeg to decode audio files."
-  echo "  Install via: brew install ffmpeg  (macOS)"
+  echo "  Install with your system package manager (e.g. brew install ffmpeg on macOS, choco install ffmpeg on Windows)"
   echo ""
 fi
 

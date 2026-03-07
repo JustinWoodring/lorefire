@@ -122,7 +122,7 @@ trait GeneratesViaComfyUI
             'save' => [
                 'class_type' => 'SaveImage',
                 'inputs'     => [
-                    'filename_prefix' => 'dnd-companion',
+                    'filename_prefix' => 'lorefire',
                     'images'          => ['decode', 0],
                 ],
             ],
@@ -378,7 +378,7 @@ trait GeneratesViaComfyUI
         $workflow['save'] = [
             'class_type' => 'SaveImage',
             'inputs'     => [
-                'filename_prefix' => 'dnd-companion',
+                'filename_prefix' => 'lorefire',
                 'images'          => ['decode', 0],
             ],
         ];

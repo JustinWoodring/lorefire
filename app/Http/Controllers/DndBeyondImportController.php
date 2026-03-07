@@ -45,7 +45,7 @@ class DndBeyondImportController extends Controller
 
         try {
             $response = \Illuminate\Support\Facades\Http::timeout(10)
-                ->withHeaders(['User-Agent' => 'DnD-Companion/1.0'])
+                ->withHeaders(['User-Agent' => 'Lorefire/1.0'])
                 ->get($jsonUrl);
 
             if (! $response->successful()) {

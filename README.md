@@ -7,11 +7,11 @@
 <img width="1056" height="800" alt="Screenshot 2026-03-06 at 8 20 58 AM" src="https://github.com/user-attachments/assets/d86597f8-4304-40c7-b542-4c48a4c74f49" />
 
 
-> A local-first D&D 5e campaign companion for macOS. Record sessions, auto-transcribe with AI, generate bardic summaries, track characters, and build your campaign archive — all on your machine, no cloud required.
+> A local-first chronicle for 5e campaigns. Record sessions, auto-transcribe with AI, generate bardic summaries, track characters, and build your campaign archive — all on your machine, no cloud required.
 
 Built with [NativePHP](https://nativephp.com), [Laravel 12](https://laravel.com), [React](https://react.dev), and [Inertia.js](https://inertiajs.com).
 
-> **Tested on Apple Silicon (M2).** Should work on other macOS hardware; Intel Macs are untested.
+> **Tested on Apple Silicon.** Runs on any sufficiently powerful machine — Macs tend to excel at local AI workloads.
 
 ---
 
@@ -21,7 +21,7 @@ Built with [NativePHP](https://nativephp.com), [Laravel 12](https://laravel.com)
 |---|---|---|
 | 📚 | **Campaigns** | Manage multiple campaigns with party portraits and full session history |
 | 🧙 | **Characters** | Full 5e character sheets — HP, spell slots, inventory, conditions, short/long rests |
-| 📥 | **D&D Beyond Import** | Import characters directly from D&D Beyond |
+| 📥 | **Beyond Import** | Import characters directly from D&D Beyond |
 | 🎙️ | **Session Recording** | Record audio at the table and transcribe locally with WhisperX |
 | 📖 | **Bardic Summaries** | AI-generated epic prose recaps of your sessions |
 | ⚔️ | **Encounter Tracker** | Auto-detect encounters from transcripts with round-by-round breakdowns |
@@ -51,7 +51,7 @@ xattr -rd com.apple.quarantine /Applications/Lorefire.app
 
 ### Prerequisites
 
-- macOS (Apple Silicon recommended)
+- macOS (tested), Windows and Linux (untested)
 - [Node.js](https://nodejs.org) 20+
 - [PHP](https://php.net) 8.2+
 - [Composer](https://getcomposer.org)
@@ -103,7 +103,7 @@ On first launch, the app automatically installs the Python venv in the backgroun
 | **Language** | Default `English`. Auto-detect and 9 other languages supported. |
 | **HuggingFace Token** | Required for **speaker diarization** (identifying who said what). Free at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens). You must also accept the [pyannote model license](https://huggingface.co/pyannote/speaker-diarization-3.1). |
 
-> **Large-v3 note:** Needs 8 GB+ RAM and will be noticeably slow on CPU. On an M2 with enough unified memory it works well.
+> **Large-v3 note:** Needs 8 GB+ RAM and will be noticeably slow on CPU. On Apple Silicon with enough unified memory it works well.
 
 ### 🤖 LLM Provider (Summaries, Oracle, Art Prompts)
 
@@ -222,7 +222,7 @@ Lorefire submits generation jobs via the ComfyUI API. The active checkpoint in C
 
 - **All data is local.** The SQLite database lives in `~/Library/Application Support/lorefire/` (production) or `~/Library/Application Support/lorefire-dev/` (dev).
 - **No account required.** Nothing is synced to a server. Your campaigns stay on your machine.
-- **Intel Mac / other hardware:** The app has only been tested on an M2 Mac. It may work on Intel Macs or other configurations, but this is untested. WhisperX in particular will be significantly slower without Apple Silicon's Neural Engine.
+- **Other hardware:** Tested on Apple Silicon. It may work on Intel Macs, Windows, or Linux, but this is untested. WhisperX in particular will be significantly slower without a dedicated neural engine or GPU.
 - **Transcription is CPU/ANE-bound.** On Apple Silicon, WhisperX uses the `mps` backend. Large audio files may take a few minutes even on `base` model.
 
 ---

@@ -148,7 +148,7 @@ class PdfExportController extends Controller
     private function enqueue(string $html, string $filename): string
     {
         $key     = 'pdf_export_' . Str::uuid()->toString();
-        $tmpHtml = tempnam(sys_get_temp_dir(), 'dnd_pdf_') . '.html';
+        $tmpHtml = tempnam(sys_get_temp_dir(), 'lorefire_pdf_') . '.html';
         file_put_contents($tmpHtml, $html);
 
         Cache::put($key, ['status' => 'pending'], now()->addMinutes(10));

@@ -376,7 +376,7 @@ export default function Index({ settings }: Props) {
                 Lorefire
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-dim)' }}>
-                Version 0.1.0 &mdash; Built for macOS (Apple Silicon)
+                Version 0.1.0
               </p>
               <a
                 href="https://github.com/JustinWoodring/lorefire"
