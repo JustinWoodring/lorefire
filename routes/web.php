@@ -127,12 +127,14 @@ Route::prefix('campaigns/{campaign}')->name('campaigns.')->group(function () {
     Route::get('sessions/{session}/live', [LiveSessionController::class, 'show'])->name('sessions.live');
     Route::post('characters/{character}/import-dnd-beyond', [DndBeyondImportController::class, 'import'])
         ->name('characters.import-dnd-beyond');
-    Route::post('characters/{character}/rest/short', [CharacterRestController::class, 'shortRest'])
+    Route::post('characters/{character}/rest/short', [CharacterRestController::class, 'shortRestForCampaign'])
         ->name('characters.rest.short');
-    Route::post('characters/{character}/rest/long', [CharacterRestController::class, 'longRest'])
+    Route::post('characters/{character}/rest/long', [CharacterRestController::class, 'longRestForCampaign'])
         ->name('characters.rest.long');
     Route::patch('characters/{character}/spell-slots', [CharacterSpellSlotsController::class, 'updateForCampaign'])
         ->name('characters.spell-slots.update');
+    Route::patch('characters/{character}/class-features', [CharacterClassFeaturesController::class, 'updateForCampaign'])
+        ->name('characters.class-features.update');
     // Speaker profiles (campaign-scoped)
     Route::post('speakers',                    [SpeakerProfileController::class, 'store'])->name('speakers.store');
     Route::patch('speakers/{speaker}',         [SpeakerProfileController::class, 'update'])->name('speakers.update');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Campaign;
 use App\Models\Character;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,5 +42,14 @@ class CharacterClassFeaturesController extends Controller
         $character->update(['class_features' => $cf]);
 
         return response()->json(['class_features' => $character->class_features]);
+    }
+
+    /**
+     * Campaign-scoped variant — same logic, accept the campaign route binding.
+     * PATCH /campaigns/{campaign}/characters/{character}/class-features
+     */
+    public function updateForCampaign(Request $request, Campaign $campaign, Character $character): JsonResponse
+    {
+        return $this->update($request, $character);
     }
 }

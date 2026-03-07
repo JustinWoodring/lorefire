@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Campaign;
 use App\Models\Character;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -183,5 +184,22 @@ class CharacterRestController extends Controller
         ]);
 
         return back()->with('success', 'Long rest taken. HP and resources restored.');
+    }
+
+    /**
+     * Campaign-scoped wrappers — same logic, accept the campaign route binding.
+     * POST /campaigns/{campaign}/characters/{character}/rest/short
+     */
+    public function shortRestForCampaign(Request $request, Campaign $campaign, Character $character): RedirectResponse
+    {
+        return $this->shortRest($request, $character);
+    }
+
+    /**
+     * POST /campaigns/{campaign}/characters/{character}/rest/long
+     */
+    public function longRestForCampaign(Request $request, Campaign $campaign, Character $character): RedirectResponse
+    {
+        return $this->longRest($request, $character);
     }
 }

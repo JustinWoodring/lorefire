@@ -196,7 +196,9 @@ function CharacterCard({ character, campaignId }: { character: Character; campai
   const restUrl = standalone
     ? `/characters/${character.id}/rest`
     : `/campaigns/${campaignId}/characters/${character.id}/rest`
-  const classFeaturesUrl = `/characters/${character.id}/class-features`
+  const classFeaturesUrl = standalone
+    ? `/characters/${character.id}/class-features`
+    : `/campaigns/${campaignId}/characters/${character.id}/class-features`
 
   const [tab, setTab]               = useState<'combat' | 'spells' | 'inventory'>('combat')
   const [restConfirm, setRestConfirm] = useState<'short' | 'long' | null>(null)
