@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import { Toast } from '@/Components/Toast'
 import { useRecording } from '@/Contexts/RecordingContext'
+
+// Module-level: tracks which session IDs have already triggered the recording modal.
+// Lives outside React so it survives AppLayout re-mounts on Inertia navigation.
+const shownModalForSession = new Set<number>()
 
 // Lorefire flame logo mark
 const LogoMark = () => (
@@ -77,25 +81,25 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, title, breadcrumbs }: AppLayoutProps) {
   const { url } = usePage()
-  const { isRecording, recordingSeconds, isUploading, uploadProgress, activeLiveUrl } = useRecording()
+  const { isRecording, recordingSeconds, isUploading, uploadProgress, activeLiveUrl, activeSessionId } = useRecording()
 
   const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
-  // Recording-start modal
+  // Recording-start modal — fires exactly once per recording session.
   const [showRecordingModal, setShowRecordingModal] = useState(false)
-  const prevRecording = useRef(false)
 
   useEffect(() => {
-    if (isRecording && !prevRecording.current) {
+    if (isRecording && activeSessionId !== null && !shownModalForSession.has(activeSessionId)) {
+      shownModalForSession.add(activeSessionId)
       setShowRecordingModal(true)
       const t = setTimeout(() => setShowRecordingModal(false), 6000)
-      prevRecording.current = true
       return () => clearTimeout(t)
     }
-    if (!isRecording) {
-      prevRecording.current = false
+    if (!isRecording && activeSessionId === null) {
+      // Recording fully stopped — clear the set so next recording shows the modal again.
+      shownModalForSession.clear()
     }
-  }, [isRecording])
+  }, [isRecording, activeSessionId])
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-void)' }}>
