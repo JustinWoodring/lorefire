@@ -27,7 +27,7 @@ class CharacterClassFeaturesController extends Controller
     {
         $incoming = $request->validate([
             'updates'   => ['required', 'array'],
-            'updates.*' => ['nullable', 'scalar'],
+            'updates.*' => ['nullable'],
         ]);
 
         $cf = $character->class_features ?? [];
