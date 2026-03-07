@@ -182,7 +182,7 @@ export default function Index({ settings }: Props) {
                 value={data.zai_base_url}
                 onChange={e => setData('zai_base_url', e.target.value)}
                 placeholder="https://api.z.ai/api/coding/paas/v4"
-                hint="GLM Coding Plan endpoint. Default works with your coding plan subscription."
+                hint="GLM Coding Plan endpoint. Your coding plan API key is separate from a regular z.ai API key — use the key from your coding plan subscription here."
               />
             </div>
           )}
@@ -297,7 +297,7 @@ export default function Index({ settings }: Props) {
           {data.image_gen_provider === 'zai' && (
             <div className="flex flex-col gap-3">
               <p className="text-xs text-[var(--color-text-dim)] -mt-1">
-                Uses your z.ai API key and base URL configured above.
+                Uses your z.ai API key and base URL configured above. Note: the coding plan API key cannot be used for image generation — you need a separate standard z.ai API key and must set the base URL to the standard z.ai endpoint.
               </p>
               <Input
                 label="Image Model"
