@@ -46,9 +46,9 @@ jobs:
           echo "" >> .env
           echo "NATIVEPHP_APP_ID=com.justinwoodring.lorefire" >> .env
           echo "NATIVEPHP_APP_VERSION=${APP_VERSION}" >> .env
-          echo "NATIVEPHP_APP_AUTHOR=Justin Woodring" >> .env
-          echo "NATIVEPHP_APP_COPYRIGHT=Copyright © 2026 Justin Woodring" >> .env
-          echo "NATIVEPHP_APP_DESCRIPTION=A local-first chronicle for 5e tabletop campaigns" >> .env
+          echo "NATIVEPHP_APP_AUTHOR='Justin Woodring'" >> .env
+          echo "NATIVEPHP_APP_COPYRIGHT='Copyright © 2026 Justin Woodring'" >> .env
+          echo "NATIVEPHP_APP_DESCRIPTION='A local-first chronicle for 5e tabletop campaigns'" >> .env
           echo "NATIVEPHP_APP_WEBSITE=https://github.com/JustinWoodring/lorefire" >> .env
           echo "NATIVEPHP_UPDATER_ENABLED=false" >> .env
 
