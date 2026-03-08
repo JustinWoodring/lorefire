@@ -2,8 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\Campaign;
-use App\Models\GameSession;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
@@ -26,7 +24,9 @@ class ExportPdf implements ShouldQueue
     public function handle(): void
     {
         try {
-            $pdfBase64 = System::printToPDFFromUrl('file://' . $this->htmlPath, [
+            $html = rawurlencode(file_get_contents($this->htmlPath));
+
+            $pdfBase64 = System::printToPDF($html, [
                 'pageSize'        => 'A4',
                 'printBackground' => true,
                 'margins'         => ['top' => 0, 'bottom' => 0, 'left' => 0, 'right' => 0],
