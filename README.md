@@ -1,7 +1,7 @@
 # Lorefire
 
 <p align="center">
-  <img width="128" height="128" alt="Lorefire" src="public/logo.png" />
+  <img width="128" height="128" alt="Lorefire" src="lorefire-desktop/public/logo.png" />
 </p>
 
 [![Release](https://github.com/JustinWoodring/lorefire/actions/workflows/release.yml/badge.svg)](https://github.com/JustinWoodring/lorefire/actions/workflows/release.yml)
@@ -63,7 +63,7 @@ xattr -rd com.apple.quarantine /Applications/Lorefire.app
 ```bash
 # Clone the repo
 git clone https://github.com/justinwoodring/lorefire.git
-cd lorefire
+cd lorefire/lorefire-desktop
 
 # Install PHP dependencies
 composer install

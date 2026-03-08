@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>{{ section.title }}</h1>
+        <p class="subtitle">{{ section.description }}</p>
+        <div class="cta-container">
+            <a href="https://github.com/JustinWoodring/lorefire/releases" class="cta-button primary">
+                Download for macOS
+                <i data-lucide="download"></i>
+            </a>
+            <a href="https://github.com/JustinWoodring/lorefire" class="cta-button secondary">
+                <i data-lucide="github"></i>
+                View on GitHub
+            </a>
+        </div>
+
+        <div class="tech-stack">
+            <p>BUILT WITH OPEN SOURCE</p>
+            <div class="tech-icons">
+                <span><i data-lucide="box"></i> NativePHP</span>
+                <span><i data-lucide="server"></i> Laravel</span>
+                <span><i data-lucide="layers"></i> React</span>
+                <span><i data-lucide="database"></i> SQLite</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-screenshot">
+        <img src="/campaign-screenshot.png" alt="Lorefire campaign view" />
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature-card span-2">
+        <div class="icon-box"><i data-lucide="mic"></i></div>
+        <h3>Record &amp; Transcribe</h3>
+        <p>Record audio at the table and transcribe locally with WhisperX — no data ever leaves your machine. Choose from tiny to large-v3 models. Supports speaker diarization so the transcript knows who said what.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon-box"><i data-lucide="scroll-text"></i></div>
+        <h3>Bardic Summaries</h3>
+        <p>AI-generated epic prose recaps of each session, written as if a bard were present. Share with your party after every game.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon-box"><i data-lucide="users"></i></div>
+        <h3>Full 5e Character Sheets</h3>
+        <p>HP, spell slots, inventory, conditions, and short/long rests. Import directly from D&amp;D Beyond.</p>
+    </div>
+    <div class="feature-card span-2">
+        <div class="icon-box"><i data-lucide="sparkles"></i></div>
+        <h3>The Oracle</h3>
+        <p>An AI chat assistant with full access to your campaign data — sessions, characters, NPCs, and encounters. Ask anything about your world. Supports z.ai, OpenAI, Anthropic, and local Ollama models.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon-box"><i data-lucide="swords"></i></div>
+        <h3>Encounter Tracker</h3>
+        <p>Auto-detect encounters from transcripts with round-by-round breakdowns and outcome tracking.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon-box"><i data-lucide="user-circle-2"></i></div>
+        <h3>NPC Roster</h3>
+        <p>Track NPCs with attitudes, locations, and AI-generated portraits. Watch relationships evolve over the campaign.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon-box"><i data-lucide="image"></i></div>
+        <h3>Art Generation</h3>
+        <p>Generate character portraits and scene art via ComfyUI (local), z.ai, or DALL-E. Lifelike or comic art styles.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon-box"><i data-lucide="lock"></i></div>
+        <h3>Fully Offline</h3>
+        <p>All data lives in a local SQLite database. No account, no sync, no telemetry. Your campaigns stay on your machine.</p>
+    </div>
+</section>
+
+<!-- Screenshots Gallery -->
+<section class="screenshots">
+    <div class="section-heading">
+        <h2>See It in Action</h2>
+        <p>From session recording to AI-generated recaps — all on your machine.</p>
+    </div>
+    <div class="screenshot-grid">
+        <div class="screenshot-item span-2">
+            <img src="/session-screenshot.png" alt="Session view with bardic summary" />
+            <div class="screenshot-label">Session view with AI-generated bardic summary</div>
+        </div>
+        <div class="screenshot-item">
+            <img src="/recording-screenshot.png" alt="Session recording interface" />
+            <div class="screenshot-label">In-session recording</div>
+        </div>
+        <div class="screenshot-item">
+            <img src="/transcribing-screenshot.png" alt="Live transcription" />
+            <div class="screenshot-label">Local WhisperX transcription</div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works">
+    <div class="section-heading">
+        <h2>Get started in minutes</h2>
+        <p>Download the release build or run from source.</p>
+    </div>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-text">
+                <h3>Download</h3>
+                <p>Grab the latest <code>.dmg</code> from the <a href="https://github.com/JustinWoodring/lorefire/releases" target="_blank">Releases page</a> and drag Lorefire.app to <code>/Applications</code>.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-text">
+                <h3>Remove quarantine</h3>
+                <p>The app is not notarized. Run once to clear the Gatekeeper flag:</p>
+                <pre><code>xattr -rd com.apple.quarantine /Applications/Lorefire.app</code></pre>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-text">
+                <h3>Complete onboarding</h3>
+                <p>Launch the app. The wizard walks you through setting up your LLM provider, transcription model size, and first campaign.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Providers -->
+<section class="providers">
+    <div class="section-heading">
+        <h2>Works with your AI provider</h2>
+        <p>Fully local or cloud — your choice. Swap providers any time in Settings.</p>
+    </div>
+    <div class="providers-grid">
+        <div class="provider-card recommended">
+            <strong>z.ai <span class="tag">Recommended</span></strong>
+            <span>GLM-4 models. Get a key at z.ai.</span>
+        </div>
+        <div class="provider-card">
+            <strong>Ollama</strong>
+            <span>Any local model. No API key, fully offline.</span>
+        </div>
+        <div class="provider-card">
+            <strong>OpenAI</strong>
+            <span>GPT-4o-mini. Requires API key.</span>
+        </div>
+        <div class="provider-card">
+            <strong>Anthropic</strong>
+            <span>Claude Haiku. Requires API key.</span>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+    <div class="section-heading">
+        <h2>Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-grid">
+        <div class="faq-item">
+            <h4>Is Lorefire free?</h4>
+            <p>Yes. Lorefire is open-source under the MIT license. No subscription, no account required.</p>
+        </div>
+        <div class="faq-item">
+            <h4>What hardware do I need?</h4>
+            <p>Tested on Apple Silicon. Macs tend to excel at local AI workloads. It may work on Intel Macs, Windows, or Linux but this is untested.</p>
+        </div>
+        <div class="faq-item">
+            <h4>Where is my data stored?</h4>
+            <p>All data lives in <code>~/Library/Application Support/lorefire/</code> on macOS. Nothing is synced or uploaded anywhere.</p>
+        </div>
+        <div class="faq-item">
+            <h4>Can I use it without an AI provider?</h4>
+            <p>Yes. Lorefire falls back to template-based summaries when no provider is configured. Recording, transcription, and character tracking still work fully offline.</p>
+        </div>
+        <div class="faq-item">
+            <h4>How does local transcription work?</h4>
+            <p>Lorefire bundles WhisperX in a local Python virtual environment. The first launch installs it automatically. Audio never leaves your device.</p>
+        </div>
+        <div class="faq-item">
+            <h4>Can I import characters from D&amp;D Beyond?</h4>
+            <p>Yes. Use Settings → D&amp;D Beyond Import and paste your character URL. Stats, features, spells, and inventory are imported automatically.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Bottom CTA -->
+<section class="bottom-cta">
+    <div class="cta-content">
+        <h2>Ready to chronicle your campaign?</h2>
+        <p>Free, open source, and entirely offline.</p>
+        <div class="cta-buttons">
+            <a href="https://github.com/JustinWoodring/lorefire/releases" class="cta-button primary large">
+                Download Lorefire
+                <i data-lucide="download"></i>
+            </a>
+            <a href="https://github.com/JustinWoodring/lorefire" class="cta-button secondary large">
+                <i data-lucide="github"></i>
+                View Source
+            </a>
+        </div>
+    </div>
+</section>
+
+<div class="content">
+    {{ section.content | safe }}
+</div>
+{% endblock content %}

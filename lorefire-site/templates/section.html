@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content">
+    <h1>{{ section.title }}</h1>
+    {{ section.content | safe }}
+    {% for page in section.pages %}
+    <div class="doc-card">
+        <h3><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
+        {% if page.description %}<p>{{ page.description }}</p>{% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}
