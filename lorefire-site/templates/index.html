@@ -7,7 +7,7 @@
         <p class="subtitle">{{ section.description }}</p>
         <div class="cta-container">
             <a href="https://github.com/JustinWoodring/lorefire/releases" class="cta-button primary">
-                Download for macOS
+                Download
                 <i data-lucide="download"></i>
             </a>
             <a href="https://github.com/JustinWoodring/lorefire" class="cta-button secondary">
@@ -103,27 +103,64 @@
         <h2>Get started in minutes</h2>
         <p>Download the release build or run from source.</p>
     </div>
-    <div class="steps">
-        <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-text">
-                <h3>Download</h3>
-                <p>Grab the latest <code>.dmg</code> from the <a href="https://github.com/JustinWoodring/lorefire/releases" target="_blank">Releases page</a> and drag Lorefire.app to <code>/Applications</code>.</p>
+    <div class="os-tabs">
+        <div class="os-tab-buttons">
+            <button class="os-tab-btn active" onclick="switchTab('mac', this)">
+                <i data-lucide="apple"></i> macOS
+            </button>
+            <button class="os-tab-btn" onclick="switchTab('win', this)">
+                <i data-lucide="monitor"></i> Windows
+            </button>
+        </div>
+        <div class="os-tab-content" id="tab-mac">
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">
+                        <h3>Download</h3>
+                        <p>Grab the latest <code>.dmg</code> from the <a href="https://github.com/JustinWoodring/lorefire/releases" target="_blank">Releases page</a> and drag Lorefire.app to <code>/Applications</code>.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">
+                        <h3>Remove quarantine</h3>
+                        <p>The app is not notarized. Run once to clear the Gatekeeper flag:</p>
+                        <pre><code>xattr -rd com.apple.quarantine /Applications/Lorefire.app</code></pre>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">
+                        <h3>Complete onboarding</h3>
+                        <p>Launch the app. The wizard walks you through setting up your LLM provider, transcription model size, and first campaign.</p>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-text">
-                <h3>Remove quarantine</h3>
-                <p>The app is not notarized. Run once to clear the Gatekeeper flag:</p>
-                <pre><code>xattr -rd com.apple.quarantine /Applications/Lorefire.app</code></pre>
-            </div>
-        </div>
-        <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-text">
-                <h3>Complete onboarding</h3>
-                <p>Launch the app. The wizard walks you through setting up your LLM provider, transcription model size, and first campaign.</p>
+        <div class="os-tab-content" id="tab-win">
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">
+                        <h3>Download</h3>
+                        <p>Grab the latest <code>.exe</code> installer from the <a href="https://github.com/JustinWoodring/lorefire/releases" target="_blank">Releases page</a> and run it.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">
+                        <h3>Allow the installer</h3>
+                        <p>Windows SmartScreen may show a warning since the app is not code-signed. Click <strong>More info</strong> then <strong>Run anyway</strong> to proceed.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">
+                        <h3>Complete onboarding</h3>
+                        <p>Launch Lorefire from the Start Menu. The wizard walks you through setting up your LLM provider, transcription model size, and first campaign.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -167,11 +204,11 @@
         </div>
         <div class="faq-item">
             <h4>What hardware do I need?</h4>
-            <p>Tested on Apple Silicon. Macs tend to excel at local AI workloads. It may work on Intel Macs, Windows, or Linux but this is untested.</p>
+            <p>Lorefire runs on macOS (Apple Silicon and Intel) and Windows. Apple Silicon Macs excel at local AI workloads. Windows is supported — a dedicated GPU helps for local transcription and image generation but is not required.</p>
         </div>
         <div class="faq-item">
             <h4>Where is my data stored?</h4>
-            <p>All data lives in <code>~/Library/Application Support/lorefire/</code> on macOS. Nothing is synced or uploaded anywhere.</p>
+            <p>On macOS: <code>~/Library/Application Support/lorefire/</code>. On Windows: <code>%APPDATA%\lorefire\</code>. Nothing is synced or uploaded anywhere.</p>
         </div>
         <div class="faq-item">
             <h4>Can I use it without an AI provider?</h4>
@@ -210,3 +247,18 @@
     {{ section.content | safe }}
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    function switchTab(os, btn) {
+        document.querySelectorAll('.os-tab-content').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        document.querySelectorAll('.os-tab-btn').forEach(function(el) {
+            el.classList.remove('active');
+        });
+        document.getElementById('tab-' + os).style.display = 'block';
+        btn.classList.add('active');
+    }
+</script>
+{% endblock scripts %}

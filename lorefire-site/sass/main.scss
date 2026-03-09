@@ -805,6 +805,7 @@ main {
             }
 
             .step-text {
+                min-width: 0;
                 h3 { font-size: 1.1rem; margin-bottom: 0.4rem; }
                 p { color: $text-base; margin: 0; font-size: 0.95rem; line-height: 1.6; }
                 pre {
@@ -814,14 +815,61 @@ main {
                     padding: 0.7rem 1rem;
                     margin-top: 0.75rem;
                     overflow-x: auto;
+                    max-width: 100%;
                     code {
                         font-family: $font-mono;
                         font-size: 0.82rem;
                         color: $rune;
+                        white-space: pre;
                     }
                 }
             }
         }
+    }
+}
+
+// ── OS Tabs ───────────────────────────────────────────────────────────────────
+.os-tabs {
+    max-width: 720px;
+    margin: 0 auto;
+
+    .os-tab-buttons {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 2rem;
+
+        .os-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 18px;
+            border-radius: 5px;
+            border: 1px solid $border;
+            background: rgba($surface, 0.5);
+            color: $text-dim;
+            font-family: $font-heading;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: all 0.2s;
+            i { width: 15px; height: 15px; }
+
+            &:hover {
+                border-color: $muted;
+                color: $text-bright;
+            }
+
+            &.active {
+                background: rgba($rune, 0.12);
+                border-color: rgba($rune, 0.4);
+                color: $rune;
+            }
+        }
+    }
+
+    .os-tab-content {
+        &#tab-win { display: none; }
     }
 }
 
@@ -1000,6 +1048,58 @@ main {
     }
 }
 
+// ── Doc Cards (section index) ─────────────────────────────────────────────────
+.doc-card {
+    background-color: rgba($surface, 0.5);
+    border: 1px solid $border;
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba($rune-dim, 0.6), transparent);
+    }
+
+    &:hover {
+        border-color: rgba($rune, 0.35);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px -8px rgba(0, 0, 0, 0.6);
+    }
+
+    h3 {
+        margin-bottom: 0.4rem;
+        font-size: 1.1rem;
+        a { color: $text-white; &:hover { color: $rune; } }
+    }
+
+    p { font-size: 0.92rem; color: $text-base; margin: 0; }
+}
+
+// ── Docs hero ────────────────────────────────────────────────────────────────
+.docs-hero {
+    padding: 4rem 0 2rem;
+    border-bottom: 1px solid $border;
+    margin-bottom: 3rem;
+
+    h1 {
+        font-size: 2.5rem;
+        background: linear-gradient(180deg, $text-white 0%, $rune 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 0 20px rgba($rune, 0.2));
+        margin-bottom: 0.75rem;
+    }
+
+    p { font-size: 1.05rem; color: $text-base; margin: 0; }
+}
+
 // ── Footer ───────────────────────────────────────────────────────────────────
 footer {
     background-color: $abyss;
@@ -1067,4 +1167,10 @@ footer {
     .header-inner { padding: 1rem; }
     nav { gap: 16px; }
     .faq-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    header .logo span { display: none; }
+    header nav a span { display: none; }
+    nav { gap: 12px; }
 }
