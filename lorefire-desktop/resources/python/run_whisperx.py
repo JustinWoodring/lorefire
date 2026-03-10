@@ -38,6 +38,12 @@ import json
 import os
 import sys
 
+# Set cache directories to proper OS-native paths before any ML library imports.
+# On Windows the default expansion uses mixed separators which breaks cache lookups.
+_cache_base = os.path.join(os.path.expanduser('~'), '.cache')
+os.environ.setdefault('HF_HOME',    os.path.join(_cache_base, 'huggingface'))
+os.environ.setdefault('TORCH_HOME', os.path.join(_cache_base, 'torch'))
+
 
 def detect_device() -> tuple[str, str, str]:
     """Return (ct2_device, torch_device, compute_type).
