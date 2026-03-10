@@ -21,7 +21,11 @@ transformers<5.0.0
 pyannote.audio>=3.1.0,<4.0.0
 
 # Audio file loading / conversion
+av>=12.0.0
 ffmpeg-python>=0.2.0
+
+# HTTP — required by huggingface_hub (not always pulled in transitively)
+requests>=2.31.0
 
 # Alignment
 ctranslate2>=3.24.0
