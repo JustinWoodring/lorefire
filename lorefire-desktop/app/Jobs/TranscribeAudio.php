@@ -67,14 +67,14 @@ class TranscribeAudio implements ShouldQueue
 
         $audioPath = Storage::path($this->session->audio_path);
         $outputDir = Storage::path("sessions/{$this->session->id}/transcript");
-        $transcriptJson = $outputDir . '/transcript.json';
+        $transcriptJson = $outputDir . DIRECTORY_SEPARATOR . 'transcript.json';
 
         $model    = \App\Models\AppSetting::get('whisperx_model', 'base');
         $language = \App\Models\AppSetting::get('whisperx_language', 'en');
         $hfToken  = \App\Models\AppSetting::get('huggingface_token', '');
 
-        $venvPython    = base_path('resources/python/venv/bin/python');
-        $whisperxScript = base_path('resources/python/run_whisperx.py');
+        $venvPython     = app(\App\Services\PythonSetupService::class)->venvPythonPath();
+        $whisperxScript = base_path(implode(DIRECTORY_SEPARATOR, ['resources', 'python', 'run_whisperx.py']));
 
         $cmd = [
             $venvPython,

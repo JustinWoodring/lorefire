@@ -31,8 +31,7 @@ class ChunkedAudioController extends Controller
             Storage::disk('local')->delete($session->audio_path);
         }
 
-        $diskRoot = Storage::disk('local')->path('');
-        $absPath  = $diskRoot . $finalPath;
+        $absPath = Storage::disk('local')->path($finalPath);
 
         if (!is_dir(dirname($absPath))) {
             mkdir(dirname($absPath), 0755, true);
@@ -142,8 +141,7 @@ class ChunkedAudioController extends Controller
 
         $uploadId    = $request->input('upload_id');
         $totalChunks = (int) $request->input('total_chunks');
-        $chunkDir    = "sessions/{$session->id}/chunks/{$uploadId}";
-        $diskRoot    = Storage::disk('local')->path('');
+        $chunkDir = "sessions/{$session->id}/chunks/{$uploadId}";
 
         // Gather chunk files sorted by name (zero-padded so string sort == numeric sort)
         $files = Storage::disk('local')->files($chunkDir);
@@ -165,7 +163,7 @@ class ChunkedAudioController extends Controller
         };
 
         $finalPath = "sessions/{$session->id}/audio.{$extension}";
-        $absPath   = $diskRoot . $finalPath;
+        $absPath   = Storage::disk('local')->path($finalPath);
 
         // Ensure the sessions directory exists
         if (!is_dir(dirname($absPath))) {
@@ -179,7 +177,7 @@ class ChunkedAudioController extends Controller
         }
 
         foreach ($files as $relPath) {
-            $absChunk = $diskRoot . $relPath;
+            $absChunk = Storage::disk('local')->path($relPath);
             $in = fopen($absChunk, 'rb');
             if ($in) {
                 stream_copy_to_stream($in, $out);

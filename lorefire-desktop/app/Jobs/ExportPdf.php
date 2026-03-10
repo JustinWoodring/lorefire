@@ -32,7 +32,10 @@ class ExportPdf implements ShouldQueue
                 'margins'         => ['top' => 0, 'bottom' => 0, 'left' => 0, 'right' => 0],
             ]);
 
-            $dest = rtrim(getenv('HOME') ?: sys_get_temp_dir(), '/') . '/Downloads/' . $this->filename;
+            $downloads = PHP_OS_FAMILY === 'Windows'
+                ? (getenv('USERPROFILE') ?: sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'Downloads'
+                : rtrim(getenv('HOME') ?: sys_get_temp_dir(), '/') . '/Downloads';
+            $dest = $downloads . DIRECTORY_SEPARATOR . $this->filename;
             file_put_contents($dest, base64_decode($pdfBase64));
 
             Shell::openFile($dest);

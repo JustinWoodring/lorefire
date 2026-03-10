@@ -94,13 +94,20 @@ class PythonSetupService
 
         if (! file_exists($setupScript)) {
             AppSetting::set('python_setup_status', self::STATUS_FAILED);
-            AppSetting::set('python_setup_error', "setup.sh not found at: {$setupScript}");
+            AppSetting::set('python_setup_error', "Setup script not found at: {$setupScript}");
             return;
         }
 
-        $args = ['/bin/bash', $setupScript];
-        if ($gpu) {
-            $args[] = '--gpu';
+        if (PHP_OS_FAMILY === 'Windows') {
+            $args = ['powershell', '-ExecutionPolicy', 'Bypass', '-File', $setupScript];
+            if ($gpu) {
+                $args[] = '-Gpu';
+            }
+        } else {
+            $args = ['/bin/bash', $setupScript];
+            if ($gpu) {
+                $args[] = '--gpu';
+            }
         }
 
         $process = new Process($args);
@@ -122,8 +129,8 @@ class PythonSetupService
             } else {
                 $stderr = $this->sanitize($process->getErrorOutput());
                 AppSetting::set('python_setup_status', self::STATUS_FAILED);
-                AppSetting::set('python_setup_error', $stderr ?: 'setup.sh exited with code ' . $process->getExitCode());
-                Log::error('[PythonSetup] setup.sh failed', ['stderr' => $stderr]);
+                AppSetting::set('python_setup_error', $stderr ?: 'Setup script exited with code ' . $process->getExitCode());
+                Log::error('[PythonSetup] setup script failed', ['stderr' => $stderr]);
             }
         } catch (\Throwable $e) {
             AppSetting::set('python_setup_status', self::STATUS_FAILED);
@@ -145,12 +152,21 @@ class PythonSetupService
         $gpuFlag  = $gpu ? '--gpu' : '';
 
         // Use artisan command so we have full Laravel context
-        $cmd = sprintf(
-            'php %s python:setup %s >> %s 2>&1 &',
-            escapeshellarg($artisan),
-            $gpuFlag,
-            escapeshellarg($logPath)
-        );
+        if (PHP_OS_FAMILY === 'Windows') {
+            // Start-Process is non-blocking; stderr goes to a sidecar file since
+            // PowerShell's Start-Process cannot merge streams to one file.
+            $artisanEsc = str_replace("'", "''", $artisan);
+            $logEsc     = str_replace("'", "''", $logPath);
+            $gpuArg     = $gpu ? ", '--gpu'" : '';
+            $cmd = "powershell -Command \"Start-Process php -ArgumentList '{$artisanEsc}', 'python:setup'{$gpuArg} -RedirectStandardOutput '{$logEsc}' -NoNewWindow\"";
+        } else {
+            $cmd = sprintf(
+                'php %s python:setup %s >> %s 2>&1 &',
+                escapeshellarg($artisan),
+                $gpuFlag,
+                escapeshellarg($logPath)
+            );
+        }
 
         shell_exec($cmd);
     }
@@ -179,11 +195,19 @@ class PythonSetupService
 
     public function venvPythonPath(): string
     {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return base_path(implode(DIRECTORY_SEPARATOR, ['resources', 'python', 'venv', 'Scripts', 'python.exe']));
+        }
+
         return base_path('resources/python/venv/bin/python');
     }
 
     public function setupScriptPath(): string
     {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return base_path(implode(DIRECTORY_SEPARATOR, ['resources', 'python', 'setup.ps1']));
+        }
+
         return base_path('resources/python/setup.sh');
     }
 
