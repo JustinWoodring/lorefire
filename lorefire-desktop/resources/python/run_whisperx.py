@@ -44,6 +44,15 @@ _cache_base = os.path.join(os.path.expanduser('~'), '.cache')
 os.environ.setdefault('HF_HOME',    os.path.join(_cache_base, 'huggingface'))
 os.environ.setdefault('TORCH_HOME', os.path.join(_cache_base, 'torch'))
 
+# DEBUG: log key environment so we can diagnose network issues in packaged builds.
+_debug_vars = ['SYSTEMROOT', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'PATH',
+               'HOMEPATH', 'HOMEDRIVE', 'TEMP', 'TMP',
+               'REQUESTS_CA_BUNDLE', 'SSL_CERT_FILE', 'CURL_CA_BUNDLE',
+               'HF_HOME', 'TORCH_HOME', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY']
+print("[whisperx-debug] Environment snapshot:", file=sys.stderr)
+for _v in _debug_vars:
+    print(f"  {_v}={os.environ.get(_v, '<not set>')}", file=sys.stderr)
+
 
 def detect_device() -> tuple[str, str, str]:
     """Return (ct2_device, torch_device, compute_type).
