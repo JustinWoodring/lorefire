@@ -79,7 +79,7 @@ fi
 if [ -z "$PYTHON_BIN" ]; then
   echo "ERROR: No Python interpreter found."
   echo "  Expected bundled runtime at: $BUNDLED_RUNTIME"
-  echo "  To download it, run: bash $SCRIPT_DIR/download_runtime.sh"
+  echo "  To download it, run: bash $SCRIPT_DIR/download_runtime.sh  (or download_runtime.ps1 on Windows)"
   echo "  Or install Python 3.9+ system-wide and re-run this script."
   exit 1
 fi
