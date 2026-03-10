@@ -93,8 +93,13 @@ class TranscribeAudio implements ShouldQueue
         $process = new Process($cmd);
         $process->setTimeout(3600);
 
-        // Stream stderr in real-time and update progress after each recognisable line
+        // Stream stderr in real-time and update progress after each recognisable line.
+        // Collect output manually — Symfony's getErrorOutput()/getOutput() are not
+        // populated when consuming the process via foreach getIterator().
         $process->start();
+
+        $capturedStderr = '';
+        $capturedStdout = '';
 
         foreach ($process as $type => $line) {
             // Check for cooperative cancellation on every output line
@@ -106,14 +111,16 @@ class TranscribeAudio implements ShouldQueue
                 return;
             }
 
-            if ($type !== Process::ERR) {
-                continue;
-            }
-            foreach (self::STAGES as [$pattern, $label, $percent]) {
-                if (preg_match($pattern, $line)) {
-                    $this->writeProgress($label, $percent);
-                    break;
+            if ($type === Process::ERR) {
+                $capturedStderr .= $line;
+                foreach (self::STAGES as [$pattern, $label, $percent]) {
+                    if (preg_match($pattern, $line)) {
+                        $this->writeProgress($label, $percent);
+                        break;
+                    }
                 }
+            } else {
+                $capturedStdout .= $line;
             }
         }
 
@@ -123,8 +130,8 @@ class TranscribeAudio implements ShouldQueue
             $detail = implode("\n", array_filter([
                 'Exit code: ' . $process->getExitCode(),
                 'CMD: ' . implode(' ', $cmd),
-                $process->getErrorOutput() ? 'STDERR: ' . $process->getErrorOutput() : null,
-                $process->getOutput()      ? 'STDOUT: ' . $process->getOutput()      : null,
+                $capturedStderr ? 'STDERR: ' . $capturedStderr : null,
+                $capturedStdout ? 'STDOUT: ' . $capturedStdout : null,
             ]));
             throw new \RuntimeException('WhisperX failed: ' . $detail);
         }
