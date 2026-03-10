@@ -65,9 +65,8 @@ class TranscribeAudio implements ShouldQueue
         $this->session->update(['transcription_status' => 'processing']);
         $this->writeProgress('Starting…', 0);
 
-        $audioPath = Storage::path($this->session->audio_path);
-        $outputDir = Storage::path("sessions/{$this->session->id}/transcript");
-        $transcriptJson = $outputDir . DIRECTORY_SEPARATOR . 'transcript.json';
+        $audioPath      = str_replace('/', DIRECTORY_SEPARATOR, Storage::path($this->session->audio_path));
+        $transcriptJson = str_replace('/', DIRECTORY_SEPARATOR, Storage::path("sessions/{$this->session->id}/transcript/transcript.json"));
 
         $model    = \App\Models\AppSetting::get('whisperx_model', 'base');
         $language = \App\Models\AppSetting::get('whisperx_language', 'en');

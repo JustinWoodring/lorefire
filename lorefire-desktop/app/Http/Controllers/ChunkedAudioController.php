@@ -31,7 +31,7 @@ class ChunkedAudioController extends Controller
             Storage::disk('local')->delete($session->audio_path);
         }
 
-        $absPath = Storage::disk('local')->path($finalPath);
+        $absPath = str_replace('/', DIRECTORY_SEPARATOR, Storage::disk('local')->path($finalPath));
 
         if (!is_dir(dirname($absPath))) {
             mkdir(dirname($absPath), 0755, true);
@@ -59,7 +59,7 @@ class ChunkedAudioController extends Controller
             return response()->json(['error' => 'No audio file found for this session.'], 404);
         }
 
-        $absPath   = Storage::disk('local')->path($session->audio_path);
+        $absPath   = str_replace('/', DIRECTORY_SEPARATOR, Storage::disk('local')->path($session->audio_path));
         $extension = pathinfo($session->audio_path, PATHINFO_EXTENSION);
         $filename  = Str::slug($session->title) . '-session-' . ($session->session_number ?? $session->id) . '.' . $extension;
 
@@ -163,7 +163,7 @@ class ChunkedAudioController extends Controller
         };
 
         $finalPath = "sessions/{$session->id}/audio.{$extension}";
-        $absPath   = Storage::disk('local')->path($finalPath);
+        $absPath   = str_replace('/', DIRECTORY_SEPARATOR, Storage::disk('local')->path($finalPath));
 
         // Ensure the sessions directory exists
         if (!is_dir(dirname($absPath))) {
@@ -177,7 +177,7 @@ class ChunkedAudioController extends Controller
         }
 
         foreach ($files as $relPath) {
-            $absChunk = Storage::disk('local')->path($relPath);
+            $absChunk = str_replace('/', DIRECTORY_SEPARATOR, Storage::disk('local')->path($relPath));
             $in = fopen($absChunk, 'rb');
             if ($in) {
                 stream_copy_to_stream($in, $out);
