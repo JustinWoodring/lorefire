@@ -121,7 +121,13 @@ class TranscribeAudio implements ShouldQueue
         if (! $process->isSuccessful()) {
             $this->writeProgress('Failed', 0);
             $this->session->update(['transcription_status' => 'failed']);
-            throw new \RuntimeException('WhisperX failed: ' . $process->getErrorOutput());
+            $detail = implode("\n", array_filter([
+                'Exit code: ' . $process->getExitCode(),
+                'CMD: ' . implode(' ', $cmd),
+                $process->getErrorOutput() ? 'STDERR: ' . $process->getErrorOutput() : null,
+                $process->getOutput()      ? 'STDOUT: ' . $process->getOutput()      : null,
+            ]));
+            throw new \RuntimeException('WhisperX failed: ' . $detail);
         }
 
         // Set status to done first so the poller never sees processing + no progress file
