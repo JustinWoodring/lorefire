@@ -26,6 +26,8 @@ ffmpeg-python>=0.2.0
 
 # HTTP — required by huggingface_hub (not always pulled in transitively)
 requests>=2.31.0
+urllib3>=2.0.0
+tokenizers>=0.15.0
 
 # Alignment
 ctranslate2>=3.24.0

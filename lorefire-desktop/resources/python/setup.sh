@@ -122,7 +122,6 @@ fi
 
 # -- Install WhisperX and remaining deps ---------------------------------
 echo "==> Installing WhisperX and dependencies..."
-"$VENV_PIP" install -r "$REQ_FILE" --no-deps || \
 "$VENV_PIP" install -r "$REQ_FILE"
 
 # -- Verify install ------------------------------------------------------

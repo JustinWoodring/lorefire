@@ -96,12 +96,7 @@ if ($Gpu) {
 
 # -- Install WhisperX and remaining deps ---------------------------------
 Write-Host "==> Installing WhisperX and dependencies..."
-try {
-    & $VenvPip install -r $ReqFile --no-deps
-    if ($LASTEXITCODE -ne 0) { throw "pip --no-deps failed" }
-} catch {
-    & $VenvPip install -r $ReqFile
-}
+& $VenvPip install -r $ReqFile
 
 # -- Verify install ------------------------------------------------------
 Write-Host "==> Verifying installation..."
