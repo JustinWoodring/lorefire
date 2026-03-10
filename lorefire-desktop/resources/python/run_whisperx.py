@@ -44,14 +44,25 @@ _cache_base = os.path.join(os.path.expanduser('~'), '.cache')
 os.environ.setdefault('HF_HOME',    os.path.join(_cache_base, 'huggingface'))
 os.environ.setdefault('TORCH_HOME', os.path.join(_cache_base, 'torch'))
 
-# DEBUG: log key environment so we can diagnose network issues in packaged builds.
-_debug_vars = ['SYSTEMROOT', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'PATH',
-               'HOMEPATH', 'HOMEDRIVE', 'TEMP', 'TMP',
-               'REQUESTS_CA_BUNDLE', 'SSL_CERT_FILE', 'CURL_CA_BUNDLE',
-               'HF_HOME', 'TORCH_HOME', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY']
-print("[whisperx-debug] Environment snapshot:", file=sys.stderr)
-for _v in _debug_vars:
-    print(f"  {_v}={os.environ.get(_v, '<not set>')}", file=sys.stderr)
+# python-build-standalone does not hook into the Windows certificate store,
+# so urllib (used by torch.hub and huggingface_hub) fails SSL verification.
+# Explicitly point SSL to certifi's CA bundle to fix HTTPS in packaged builds.
+try:
+    import certifi
+    os.environ.setdefault('SSL_CERT_FILE',      certifi.where())
+    os.environ.setdefault('REQUESTS_CA_BUNDLE', certifi.where())
+    os.environ.setdefault('CURL_CA_BUNDLE',     certifi.where())
+except ImportError:
+    pass
+
+# Network connectivity check — surfaces the real error instead of torch.hub's
+# generic "no internet connection" message.
+import urllib.request as _urllib_request
+try:
+    _urllib_request.urlopen('https://huggingface.co', timeout=10)
+    print("[whisperx-debug] Network: OK", file=sys.stderr)
+except Exception as _net_err:
+    print(f"[whisperx-debug] Network: FAILED — {type(_net_err).__name__}: {_net_err}", file=sys.stderr)
 
 
 def detect_device() -> tuple[str, str, str]:
