@@ -44,12 +44,22 @@ _cache_base = os.path.join(os.path.expanduser('~'), '.cache')
 os.environ.setdefault('HF_HOME',    os.path.join(_cache_base, 'huggingface'))
 os.environ.setdefault('TORCH_HOME', os.path.join(_cache_base, 'torch'))
 
-# Prepend the imageio-ffmpeg bundled binary to PATH so whisperx.load_audio()
-# finds ffmpeg without requiring a system install.
+# imageio-ffmpeg bundles ffmpeg with a platform-specific name (e.g.
+# ffmpeg-win64-v6.1.exe), not "ffmpeg.exe", so adding its directory to PATH
+# is not enough.  Copy/hardlink the binary into a temp dir under the name
+# "ffmpeg" so that whisperx.load_audio() finds it by the standard name.
 try:
+    import shutil as _shutil
+    import tempfile as _tempfile
     import imageio_ffmpeg as _iio_ffmpeg
-    _ffmpeg_dir = os.path.dirname(_iio_ffmpeg.get_ffmpeg_exe())
-    os.environ['PATH'] = _ffmpeg_dir + os.pathsep + os.environ.get('PATH', '')
+    _ffmpeg_src = _iio_ffmpeg.get_ffmpeg_exe()
+    _ffmpeg_alias_dir = _tempfile.mkdtemp(prefix="lorefire_ffmpeg_")
+    _ffmpeg_alias = os.path.join(_ffmpeg_alias_dir, "ffmpeg" + os.path.splitext(_ffmpeg_src)[1])
+    try:
+        os.link(_ffmpeg_src, _ffmpeg_alias)        # hardlink — no admin needed
+    except OSError:
+        _shutil.copy2(_ffmpeg_src, _ffmpeg_alias)  # fallback: copy
+    os.environ['PATH'] = _ffmpeg_alias_dir + os.pathsep + os.environ.get('PATH', '')
 except Exception:
     pass  # Fall back to system ffmpeg if available
 
