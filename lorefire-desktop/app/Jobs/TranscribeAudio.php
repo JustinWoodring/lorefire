@@ -72,6 +72,15 @@ class TranscribeAudio implements ShouldQueue
         $language = \App\Models\AppSetting::get('whisperx_language', 'en');
         $hfToken  = \App\Models\AppSetting::get('huggingface_token', '');
 
+        $diarizeEnabled = ! empty($hfToken);
+        \Illuminate\Support\Facades\Log::info('[TranscribeAudio] Starting', [
+            'session'  => $this->session->id,
+            'model'    => $model,
+            'language' => $language,
+            'diarize'  => $diarizeEnabled,
+            'hf_token_set' => $diarizeEnabled,
+        ]);
+
         $venvPython     = app(\App\Services\PythonSetupService::class)->venvPythonPath();
         $whisperxScript = base_path(implode(DIRECTORY_SEPARATOR, ['resources', 'python', 'run_whisperx.py']));
 
@@ -84,7 +93,7 @@ class TranscribeAudio implements ShouldQueue
             '--language', $language,
         ];
 
-        if ($hfToken) {
+        if ($diarizeEnabled) {
             $cmd[] = '--diarize';
             $cmd[] = '--hf-token';
             $cmd[] = $hfToken;
@@ -124,6 +133,12 @@ class TranscribeAudio implements ShouldQueue
             }
         }
 
+        // Always persist stderr so diarization warnings are visible even on success.
+        $stderrLogPath = "sessions/{$this->session->id}/transcript/whisperx_stderr.log";
+        if ($capturedStderr) {
+            Storage::disk('local')->put($stderrLogPath, $capturedStderr);
+        }
+
         if (! $process->isSuccessful()) {
             $this->writeProgress('Failed', 0);
             $this->session->update(['transcription_status' => 'failed']);
@@ -134,6 +149,14 @@ class TranscribeAudio implements ShouldQueue
                 $capturedStdout ? 'STDOUT: ' . $capturedStdout : null,
             ]));
             throw new \RuntimeException('WhisperX failed: ' . $detail);
+        }
+
+        // Surface any diarization warning into the Laravel log for easy diagnosis.
+        if ($diarizeEnabled && str_contains($capturedStderr, 'WARNING: Diarization failed')) {
+            \Illuminate\Support\Facades\Log::warning('[TranscribeAudio] Diarization failed (check whisperx_stderr.log)', [
+                'session' => $this->session->id,
+                'stderr'  => $capturedStderr,
+            ]);
         }
 
         // Set status to done first so the poller never sees processing + no progress file
