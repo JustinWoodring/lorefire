@@ -44,6 +44,15 @@ _cache_base = os.path.join(os.path.expanduser('~'), '.cache')
 os.environ.setdefault('HF_HOME',    os.path.join(_cache_base, 'huggingface'))
 os.environ.setdefault('TORCH_HOME', os.path.join(_cache_base, 'torch'))
 
+# Prepend the imageio-ffmpeg bundled binary to PATH so whisperx.load_audio()
+# finds ffmpeg without requiring a system install.
+try:
+    import imageio_ffmpeg as _iio_ffmpeg
+    _ffmpeg_dir = os.path.dirname(_iio_ffmpeg.get_ffmpeg_exe())
+    os.environ['PATH'] = _ffmpeg_dir + os.pathsep + os.environ.get('PATH', '')
+except Exception:
+    pass  # Fall back to system ffmpeg if available
+
 # python-build-standalone does not hook into the Windows certificate store,
 # so urllib (used by torch.hub and huggingface_hub) fails SSL verification.
 # Explicitly point SSL to certifi's CA bundle to fix HTTPS in packaged builds.

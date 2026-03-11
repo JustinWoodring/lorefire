@@ -62,12 +62,12 @@ if (-not $PythonBin) {
 }
 
 # -- Check ffmpeg --------------------------------------------------------
-if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-    Write-Host ""
-    Write-Host "WARNING: ffmpeg not found in PATH."
-    Write-Host "  WhisperX requires ffmpeg to decode audio files."
-    Write-Host "  Install with: choco install ffmpeg  or  winget install ffmpeg"
-    Write-Host ""
+# imageio-ffmpeg (in requirements.txt) bundles ffmpeg so a system install
+# is not required.  Print a note if one is present anyway.
+if (Get-Command ffmpeg -ErrorAction SilentlyContinue) {
+    Write-Host "    ffmpeg (system): $((ffmpeg -version 2>&1)[0])"
+} else {
+    Write-Host "    ffmpeg: using bundled binary from imageio-ffmpeg"
 }
 
 # -- Create venv ---------------------------------------------------------
@@ -97,6 +97,19 @@ if ($Gpu) {
 # -- Install WhisperX and remaining deps ---------------------------------
 Write-Host "==> Installing WhisperX and dependencies..."
 & $VenvPip install -r $ReqFile
+
+# -- Pre-download WhisperX models ----------------------------------------
+# Download during setup so transcription works without internet at runtime.
+Write-Host "==> Pre-downloading WhisperX base model..."
+& $VenvPython -c @"
+import os
+cache = os.path.join(os.path.expanduser('~'), '.cache')
+os.environ['HF_HOME']    = os.path.join(cache, 'huggingface')
+os.environ['TORCH_HOME'] = os.path.join(cache, 'torch')
+import whisperx
+whisperx.load_model('base', device='cpu', compute_type='int8')
+print('  base model OK')
+"@
 
 # -- Verify install ------------------------------------------------------
 Write-Host "==> Verifying installation..."

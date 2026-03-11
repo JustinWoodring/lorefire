@@ -85,12 +85,12 @@ if [ -z "$PYTHON_BIN" ]; then
 fi
 
 # -- Check ffmpeg --------------------------------------------------------
-if ! command -v ffmpeg &>/dev/null; then
-  echo ""
-  echo "WARNING: ffmpeg not found in PATH."
-  echo "  WhisperX requires ffmpeg to decode audio files."
-  echo "  Install with your system package manager (e.g. brew install ffmpeg on macOS, choco install ffmpeg on Windows)"
-  echo ""
+# imageio-ffmpeg (in requirements.txt) bundles ffmpeg so a system install
+# is not required.  Print a note if one is present anyway.
+if command -v ffmpeg &>/dev/null; then
+  echo "    ffmpeg (system): $(ffmpeg -version 2>&1 | head -1)"
+else
+  echo "    ffmpeg: using bundled binary from imageio-ffmpeg"
 fi
 
 # -- Create venv ---------------------------------------------------------
@@ -123,6 +123,19 @@ fi
 # -- Install WhisperX and remaining deps ---------------------------------
 echo "==> Installing WhisperX and dependencies..."
 "$VENV_PIP" install -r "$REQ_FILE"
+
+# -- Pre-download WhisperX models ----------------------------------------
+# Download during setup so transcription works without internet at runtime.
+echo "==> Pre-downloading WhisperX base model..."
+"$VENV_PYTHON" -c "
+import os
+cache = os.path.join(os.path.expanduser('~'), '.cache')
+os.environ['HF_HOME']    = os.path.join(cache, 'huggingface')
+os.environ['TORCH_HOME'] = os.path.join(cache, 'torch')
+import whisperx
+whisperx.load_model('base', device='cpu', compute_type='int8')
+print('  base model OK')
+"
 
 # -- Verify install ------------------------------------------------------
 echo "==> Verifying installation..."
