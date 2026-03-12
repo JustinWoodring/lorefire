@@ -226,6 +226,13 @@ def main() -> int:
                     use_auth_token=args.hf_token,
                     device=torch_device,
                 )
+                if diarize_model.model is None:
+                    raise RuntimeError(
+                        "pyannote pipeline failed to load (returned None). "
+                        "Accept the model license at huggingface.co/pyannote/speaker-diarization-3.1 "
+                        "and huggingface.co/pyannote/segmentation-3.0 with the account "
+                        "that owns the provided HF token, then retry."
+                    )
                 diarize_kwargs: dict = {}
                 if args.min_speakers is not None:
                     diarize_kwargs["min_speakers"] = args.min_speakers

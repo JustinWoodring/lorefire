@@ -230,6 +230,23 @@ export default function Onboarding({ python_status, python_error }: Props) {
                 <option value="large-v3">large-v3 — best accuracy, slow, needs 8GB+ RAM</option>
               </Select>
 
+              {/* Diarization note */}
+              <div className="rounded border border-[var(--color-border)] p-3 flex flex-col gap-1.5" style={{ background: 'var(--color-abyss)' }}>
+                <p className="text-[10px] uppercase tracking-widest font-heading" style={{ color: 'var(--color-text-dim)' }}>Speaker Diarization (optional)</p>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-dim)' }}>
+                  To identify who said what, add a HuggingFace token in Settings after setup.
+                  You must also <strong className="text-[var(--color-text-base)]">accept the model licenses</strong> while logged into the same HF account:
+                </p>
+                <ul className="flex flex-col gap-0.5 ml-2">
+                  {[
+                    'huggingface.co/pyannote/speaker-diarization-3.1',
+                    'huggingface.co/pyannote/segmentation-3.0',
+                  ].map(url => (
+                    <li key={url} className="text-[11px] font-mono" style={{ color: 'var(--color-rune)' }}>{url}</li>
+                  ))}
+                </ul>
+              </div>
+
               {/* Status block */}
               <PythonStatusBlock
                 status={currentPythonStatus}

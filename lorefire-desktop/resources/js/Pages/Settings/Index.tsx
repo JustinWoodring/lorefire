@@ -142,7 +142,7 @@ export default function Index({ settings }: Props) {
             value={data.huggingface_token}
             onChange={e => setData('huggingface_token', e.target.value)}
             placeholder="hf_…"
-            hint="Required for speaker diarization. Get one free at huggingface.co/settings/tokens — also accept the pyannote model license."
+            hint="Required for speaker diarization. Get a free token at huggingface.co/settings/tokens. You must also accept the model licenses at huggingface.co/pyannote/speaker-diarization-3.1 and huggingface.co/pyannote/segmentation-3.0 while logged into the same account."
           />
 
           {/* ── LLM ───────────────────────────────────────────────── */}
