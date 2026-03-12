@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import { Toast } from '@/Components/Toast'
 import { useRecording } from '@/Contexts/RecordingContext'
+import { SplashOverlay } from '@/Components/SplashOverlay'
 
 // Module-level: tracks which session IDs have already triggered the recording modal.
 // Lives outside React so it survives AppLayout re-mounts on Inertia navigation.
@@ -234,6 +235,9 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
 
       {/* Global toast notifications */}
       <Toast />
+
+      {/* Startup splash — shown while Python env is installing/reinstalling */}
+      <SplashOverlay />
 
       {/* Recording-start modal */}
       {showRecordingModal && (

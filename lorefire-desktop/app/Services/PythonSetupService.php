@@ -54,29 +54,33 @@ class PythonSetupService
     }
 
     /**
-     * Called on every app boot. Re-verifies if status is 'ready', otherwise
-     * kicks off setup in the background if not already running.
+     * Called on every app boot. Returns immediately in the common case so the
+     * main window opens without delay.
+     *
+     * Fast-path rules (no blocking verify):
+     *   - status=ready  + venv binary exists  → trust the DB, done
+     *   - status=running                       → setup already in progress, done
+     *
+     * Slow-path (async setup kicked off):
+     *   - venv binary missing, or status is not_started / failed
      */
     public function bootCheck(): void
     {
         $status = $this->getStatus();
 
-        // If venv appears to exist, do a quick verify pass
-        if ($this->venvPythonExists()) {
-            if ($this->verifyVenv()) {
-                AppSetting::set('python_setup_status', self::STATUS_READY);
-                AppSetting::set('python_setup_error', '');
-                return;
-            }
-            // venv exists but broken — fall through to re-run setup
-        }
-
-        // Don't re-launch if already running
+        // Setup is already running — nothing to do, UI will poll for completion
         if ($status === self::STATUS_RUNNING) {
             return;
         }
 
-        // Kick off async setup
+        // DB says ready and the venv binary is present — trust it, skip the
+        // expensive `import whisperx` verify that can block for up to 30 s.
+        if ($status === self::STATUS_READY && $this->venvPythonExists()) {
+            return;
+        }
+
+        // Not started, previously failed, or the venv binary has disappeared
+        // (e.g. after an app update wiped resources/) — kick off async setup.
         $this->runSetupAsync();
     }
 
