@@ -223,7 +223,7 @@ def main() -> int:
 
                 print("[whisperx] Running speaker diarization…", file=sys.stderr)
                 diarize_model = whisperx_diarize.DiarizationPipeline(
-                    token=args.hf_token,
+                    use_auth_token=args.hf_token,
                     device=torch_device,
                 )
                 diarize_kwargs: dict = {}
